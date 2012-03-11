@@ -1,0 +1,5 @@
+This project was created and is maintained by Brian Kyckelhahn. You
+are welcome to contribute to it, and you will be acknowledged in the
+contributors file for doing so, but you surrender your copyright to
+Brian when you make contributions.
+ 

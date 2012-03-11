@@ -1,0 +1,588 @@
+# -*- coding: utf-8 -*-
+
+# Copyright (C) 2011 Brian Kyckelhahn
+#
+# Licensed under a Creative Commons Attribution-NoDerivs 3.0 Unported 
+# License (the "License"); you may not use this file except in compliance 
+# with the License. You may obtain a copy of the License at
+#
+#      http://creativecommons.org/licenses/by-nd/3.0/
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+
+import sys
+import wx
+
+
+DEBUG = False
+
+
+# Set by the config file reader.
+adbPath = ''
+monkeyrunnerPath = ''
+
+# DROID 2 Keyevents taken from DROID_2.py. These were mapped in journal.odt on 20110130.
+keycodes = {}
+
+# serialNumber -> another dictionary mapping keycode names to integer keycodes for
+#                 that device
+serialNumberToKeycodeMap = {}
+
+
+# See http://developer.android.com/reference/android/view/KeyEvent.html
+DEFAULT_KEYCODES = {
+'SOFT_LEFT':1,
+'SOFT_RIGHT':2,
+'HOME':3,
+'BACK':4,
+'CALL':5,
+'ENDCALL':6,
+'KEYCODE_0':7,
+'KEYCODE_1':8,
+'KEYCODE_2':9,
+'KEYCODE_3':10,
+'KEYCODE_4':11,
+'KEYCODE_5':12,
+'KEYCODE_6':13,
+'KEYCODE_7':14,
+'KEYCODE_8':15,
+'KEYCODE_9':16,
+'STAR':17,
+'POUND':18,
+'DPAD_UP':19,
+'DPAD_DOWN':20,
+'DPAD_LEFT':21,
+'DPAD_RIGHT':22,
+'DPAD_CENTER':23, # new
+'VOLUME_UP':24,
+'VOLUME_DOWN':25,
+'POWER':26, #new
+'CAMERA':27, #new
+'CLEAR':28, # new
+'KEYCODE_A':29,
+'KEYCODE_B':30,
+'KEYCODE_C':31,
+'KEYCODE_D':32,
+'KEYCODE_E':33,
+'KEYCODE_F':34,
+'KEYCODE_G':35,
+'KEYCODE_H':36,
+'KEYCODE_I':37,
+'KEYCODE_J':38,
+'KEYCODE_K':39,
+'KEYCODE_L':40,
+'KEYCODE_M':41,
+'KEYCODE_N':42,
+'KEYCODE_O':43,
+'KEYCODE_P':44,
+'KEYCODE_Q':45,
+'KEYCODE_R':46,
+'KEYCODE_S':47,
+'KEYCODE_T':48,
+'KEYCODE_U':49,
+'KEYCODE_V':50,
+'KEYCODE_W':51,
+'KEYCODE_X':52,
+'KEYCODE_Y':53,
+'KEYCODE_Z':54,
+'COMMA':55,
+'PERIOD':56,
+'ALT_LEFT':57,
+'ALT_RIGHT':58,
+'SHIFT_LEFT':59,
+'SHIFT_RIGHT':60,
+'TAB':61,
+'SPACE':62,
+'SYM':63,
+'EXPLORER':64,
+'ENVELOPE':65,
+'RETURN':66,
+'BACKSPACE':67,
+'GRAVE':68,
+'MINUS':69,
+'EQUALS':70,
+'LEFT_BRACKET':71,
+'RIGHT_BRACKET':72,
+'BACKSLASH':73,
+'SEMICOLON':74,
+'APOSTROPHE':75,
+'SLASH':76,
+'AT':77,
+'NUM':78,
+'HEADSETHOOK':79,
+'FOCUS':80,
+'PLUS':81,
+'MENU':82,
+'NOTIFICATION_BAR':83,
+'SEARCH':84,
+'MEDIA_PLAY_PAUSE':85,
+'MEDIA_STOP':86,
+'MEDIA_NEXT':87,
+'MEDIA_PREVIOUS':88,
+'MEDIA_REWIND':89,
+'MEDIA_FAST_FORWARD':90,
+'MUTE':91,
+'PAGE_UP':92, # This launches the 'voice command' box on Droid 2.
+'PAGE_DOWN':93,
+'PICTSYMBOLS':94,
+'SWITCH_CHARSET':95,
+}
+
+
+# DEFAULT_KEYCODES = {
+# 'SOFT_LEFT':-1,
+# 'SOFT_RIGHT':-2,
+# 'HOME':-3,
+# 'BACK':-4,
+# 'CALL':-5,
+# 'ENDCALL':-6,
+# 'KEYCODE_0':-7,
+# 'KEYCODE_1':-8,
+# 'KEYCODE_2':-9,
+# 'KEYCODE_3':-10,
+# 'KEYCODE_4':-11,
+# 'KEYCODE_5':-12,
+# 'KEYCODE_6':-13,
+# 'KEYCODE_7':-14,
+# 'KEYCODE_8':-15,
+# 'KEYCODE_9':-16,
+# 'STAR':-17,
+# 'POUND':-18,
+# 'DPAD_UP':-19,
+# 'DPAD_DOWN':-20,
+# 'DPAD_LEFT':-21,
+# 'DPAD_RIGHT':-22,
+# 'DPAD_CENTER':-23, # new
+# 'VOLUME_UP':-24,
+# 'VOLUME_DOWN':-25,
+# 'POWER':-26, #new
+# 'CAMERA':-27, #new
+# 'CLEAR':-28, # new
+# 'KEYCODE_A':-29,
+# 'KEYCODE_B':-30,
+# 'KEYCODE_C':-31,
+# 'KEYCODE_D':-32,
+# 'KEYCODE_E':-33,
+# 'KEYCODE_F':-34,
+# 'KEYCODE_G':-35,
+# 'KEYCODE_H':-36,
+# 'KEYCODE_I':-37,
+# 'KEYCODE_J':-38,
+# 'KEYCODE_K':-39,
+# 'KEYCODE_L':-40,
+# 'KEYCODE_M':-41,
+# 'KEYCODE_N':-42,
+# 'KEYCODE_O':-43,
+# 'KEYCODE_P':-44,
+# 'KEYCODE_Q':-45,
+# 'KEYCODE_R':-46,
+# 'KEYCODE_S':-47,
+# 'KEYCODE_T':-48,
+# 'KEYCODE_U':-49,
+# 'KEYCODE_V':-50,
+# 'KEYCODE_W':-51,
+# 'KEYCODE_X':-52,
+# 'KEYCODE_Y':-53,
+# 'KEYCODE_Z':-54,
+# 'COMMA':-55,
+# 'PERIOD':-56,
+# 'ALT_LEFT':-57,
+# 'ALT_RIGHT':-58,
+# 'SHIFT_LEFT':-59,
+# 'SHIFT_RIGHT':-60,
+# 'TAB':-61,
+# 'SPACE':-62,
+# 'SYM':-63,
+# 'EXPLORER':-64,
+# 'ENVELOPE':-65,
+# 'RETURN':-66,
+# 'BACKSPACE':-67,
+# 'GRAVE':-68,
+# 'MINUS':-69,
+# 'EQUALS':-70,
+# 'LEFT_BRACKET':-71,
+# 'RIGHT_BRACKET':-72,
+# 'BACKSLASH':-73,
+# 'SEMICOLON':-74,
+# 'APOSTROPHE':-75,
+# 'SLASH':-76,
+# 'AT':-77,
+# 'NUM':-78,
+# 'HEADSETHOOK':-79,
+# 'FOCUS':-80,
+# 'PLUS':-81,
+# 'MENU':-82,
+# 'NOTIFICATION_BAR':-83,
+# 'SEARCH':-84,
+# 'MEDIA_PLAY_PAUSE':-85,
+# 'MEDIA_STOP':-86,
+# 'MEDIA_NEXT':-87,
+# 'MEDIA_PREVIOUS':-88,
+# 'MEDIA_REWIND':-89,
+# 'MEDIA_FAST_FORWARD':-90,
+# 'MUTE':-91,
+# 'PAGE_UP':-92, # This launches the 'voice command' box on Droid 2.
+# 'PAGE_DOWN':-93,
+# 'PICTSYMBOLS':-94,
+# 'SWITCH_CHARSET':-95,
+# }
+
+
+SOFT_LEFT='1'
+SOFT_RIGHT='2'
+HOME='3'
+BACK='4'
+CALL='5'
+ENDCALL='6'
+KEYCODE_0='7'
+KEYCODE_1='8'
+KEYCODE_2='9'
+KEYCODE_3='10'
+KEYCODE_4='11'
+KEYCODE_5='12'
+KEYCODE_6='13'
+KEYCODE_7='14'
+KEYCODE_8='15'
+KEYCODE_9='16'
+STAR='17'
+POUND='18'
+DPAD_UP='19'
+DPAD_DOWN='20'
+DPAD_LEFT='21'
+DPAD_RIGHT='22'
+DPAD_CENTER='23' # ne
+VOLUME_UP='24'
+VOLUME_DOWN='25'
+POWER='26' #new
+CAMERA='27' #new
+CLEAR='28' # new
+KEYCODE_A='29'
+KEYCODE_B='30'
+KEYCODE_C='31'
+KEYCODE_D='32'
+KEYCODE_E='33'
+KEYCODE_F='34'
+KEYCODE_G='35'
+KEYCODE_H='36'
+KEYCODE_I='37'
+KEYCODE_J='38'
+KEYCODE_K='39'
+KEYCODE_L='40'
+KEYCODE_M='41'
+KEYCODE_N='42'
+KEYCODE_O='43'
+KEYCODE_P='44'
+KEYCODE_Q='45'
+KEYCODE_R='46'
+KEYCODE_S='47'
+KEYCODE_T='48'
+KEYCODE_U='49'
+KEYCODE_V='50'
+KEYCODE_W='51'
+KEYCODE_X='52'
+KEYCODE_Y='53'
+KEYCODE_Z='54'
+COMMA='55'
+PERIOD='56'
+ALT_LEFT='57'
+ALT_RIGHT='58'
+SHIFT_LEFT='59'
+SHIFT_RIGHT='60'
+TAB='61'
+SPACE='62'
+SYM='63'
+EXPLORER='64'
+ENVELOPE='65'
+RETURN='66'
+BACKSPACE='67'
+GRAVE='68'
+MINUS='69'
+EQUALS='70'
+LEFT_BRACKET='71'
+RIGHT_BRACKET='72'
+BACKSLASH='73'
+SEMICOLON='74'
+APOSTROPHE='75'
+SLASH='76'
+AT='77'
+NUM='78'
+HEADSETHOOK='79'
+FOCUS='80'
+PLUS='81'
+MENU='82'
+NOTIFICATION_BAR='83'
+SEARCH='84'
+MEDIA_PLAY_PAUSE='85'
+MEDIA_STOP='86'
+MEDIA_NEXT='87'
+MEDIA_PREVIOUS='88'
+MEDIA_REWIND='89'
+MEDIA_FAST_FORWARD='90'
+MUTE='91'
+PAGE_UP='92'
+PAGE_DOWN='93'
+PICTSYMBOLS='94'
+SWITCH_CHARSET='95'
+
+
+KEYEVENT_NAMES={HOME:'Home',
+                STAR:'Star',
+                POUND:'Pound',
+                DPAD_UP:'DPAD Up',
+                DPAD_DOWN:'DPAD Down',
+                DPAD_LEFT:'DPAD Left',
+                DPAD_RIGHT:'DPAD Right',
+                DPAD_CENTER:'DPAD Center',
+                VOLUME_UP:'Volume Up',
+                VOLUME_DOWN:'Volume Down',
+                POWER:'Power',
+                CAMERA:'Camera',
+                CLEAR:'Clear',
+                ALT_LEFT:'ALT Left',
+                ALT_RIGHT:"ALT Right",
+                SHIFT_LEFT:'Shift Left',
+                SHIFT_RIGHT:'Shift Right',
+                TAB:'Tab',
+                SPACE:'Space',
+                RETURN:'Return',
+                BACKSPACE:'Backspace',
+                MENU:'Menu',
+                NOTIFICATION_BAR:'Notification Bar',
+                SEARCH:'Search'}
+
+# The list of keys that can be chosen from a menu for key events.
+KEY_INPUT_MENU = [
+SOFT_LEFT,
+SOFT_RIGHT,
+HOME,
+BACK,
+CALL,
+ENDCALL,
+KEYCODE_0,
+KEYCODE_1,
+KEYCODE_2,
+KEYCODE_3,
+KEYCODE_4,
+KEYCODE_5,
+KEYCODE_6,
+KEYCODE_7,
+KEYCODE_8,
+KEYCODE_9,
+STAR,
+POUND,
+DPAD_UP,
+DPAD_DOWN,
+DPAD_LEFT,
+DPAD_RIGHT,
+DPAD_CENTER,
+VOLUME_UP,
+VOLUME_DOWN,
+POWER,
+CAMERA,
+CLEAR,
+KEYCODE_A,
+KEYCODE_B,
+KEYCODE_C,
+KEYCODE_D,
+KEYCODE_E,
+KEYCODE_F,
+KEYCODE_G,
+KEYCODE_H,
+KEYCODE_I,
+KEYCODE_J,
+KEYCODE_K,
+KEYCODE_L,
+KEYCODE_M,
+KEYCODE_N,
+KEYCODE_O,
+KEYCODE_P,
+KEYCODE_Q,
+KEYCODE_R,
+KEYCODE_S,
+KEYCODE_T,
+KEYCODE_U,
+KEYCODE_V,
+KEYCODE_W,
+KEYCODE_X,
+KEYCODE_Y,
+KEYCODE_Z,
+COMMA,
+PERIOD,
+ALT_LEFT,
+ALT_RIGHT,
+SHIFT_LEFT,
+SHIFT_RIGHT,
+TAB,
+SPACE,
+SYM,
+EXPLORER,
+ENVELOPE,
+RETURN,
+BACKSPACE,
+GRAVE,
+MINUS,
+EQUALS,
+LEFT_BRACKET,
+RIGHT_BRACKET,
+BACKSLASH,
+SEMICOLON,
+APOSTROPHE,
+SLASH,
+AT,
+NUM,
+HEADSETHOOK,
+FOCUS,
+PLUS,
+MENU,
+NOTIFICATION_BAR,
+SEARCH,
+MEDIA_PLAY_PAUSE,
+MEDIA_STOP,
+MEDIA_NEXT,
+MEDIA_PREVIOUS,
+MEDIA_REWIND,
+MEDIA_FAST_FORWARD,
+MUTE,
+PAGE_UP,
+PAGE_DOWN,
+PICTSYMBOLS,
+SWITCH_CHARSET]
+
+
+KEY_MAP = {
+    wx.WXK_BACK : "WXK_BACK",
+    wx.WXK_TAB : "WXK_TAB",
+    wx.WXK_RETURN : "WXK_RETURN",
+    wx.WXK_ESCAPE : "WXK_ESCAPE",
+    wx.WXK_SPACE : "WXK_SPACE",
+    wx.WXK_DELETE : "WXK_DELETE",
+    wx.WXK_START : "WXK_START",
+    wx.WXK_LBUTTON : "WXK_LBUTTON",
+    wx.WXK_RBUTTON : "WXK_RBUTTON",
+    wx.WXK_CANCEL : "WXK_CANCEL",
+    wx.WXK_MBUTTON : "WXK_MBUTTON",
+    wx.WXK_CLEAR : "WXK_CLEAR",
+    wx.WXK_SHIFT : "WXK_SHIFT",
+    wx.WXK_ALT : "WXK_ALT",
+    wx.WXK_CONTROL : "WXK_CONTROL",
+    wx.WXK_MENU : "WXK_MENU",
+    wx.WXK_PAUSE : "WXK_PAUSE",
+    wx.WXK_CAPITAL : "WXK_CAPITAL",
+    #wx.WXK_PRIOR : "WXK_PRIOR",
+    #wx.WXK_NEXT : "WXK_NEXT",
+    wx.WXK_END : "WXK_END",
+    wx.WXK_HOME : "WXK_HOME",
+    wx.WXK_LEFT : "WXK_LEFT",
+    wx.WXK_UP : "WXK_UP",
+    wx.WXK_RIGHT : "WXK_RIGHT",
+    wx.WXK_DOWN : "WXK_DOWN",
+    wx.WXK_SELECT : "WXK_SELECT",
+    wx.WXK_PRINT : "WXK_PRINT",
+    wx.WXK_EXECUTE : "WXK_EXECUTE",
+    wx.WXK_SNAPSHOT : "WXK_SNAPSHOT",
+    wx.WXK_INSERT : "WXK_INSERT",
+    wx.WXK_HELP : "WXK_HELP",
+    wx.WXK_NUMPAD0 : "WXK_NUMPAD0",
+    wx.WXK_NUMPAD1 : "WXK_NUMPAD1",
+    wx.WXK_NUMPAD2 : "WXK_NUMPAD2",
+    wx.WXK_NUMPAD3 : "WXK_NUMPAD3",
+    wx.WXK_NUMPAD4 : "WXK_NUMPAD4",
+    wx.WXK_NUMPAD5 : "WXK_NUMPAD5",
+    wx.WXK_NUMPAD6 : "WXK_NUMPAD6",
+    wx.WXK_NUMPAD7 : "WXK_NUMPAD7",
+    wx.WXK_NUMPAD8 : "WXK_NUMPAD8",
+    wx.WXK_NUMPAD9 : "WXK_NUMPAD9",
+    wx.WXK_MULTIPLY : "WXK_MULTIPLY",
+    wx.WXK_ADD : "WXK_ADD",
+    wx.WXK_SEPARATOR : "WXK_SEPARATOR",
+    wx.WXK_SUBTRACT : "WXK_SUBTRACT",
+    wx.WXK_DECIMAL : "WXK_DECIMAL",
+    wx.WXK_DIVIDE : "WXK_DIVIDE",
+    wx.WXK_F1 : "WXK_F1",
+    wx.WXK_F2 : "WXK_F2",
+    wx.WXK_F3 : "WXK_F3",
+    wx.WXK_F4 : "WXK_F4",
+    wx.WXK_F5 : "WXK_F5",
+    wx.WXK_F6 : "WXK_F6",
+    wx.WXK_F7 : "WXK_F7",
+    wx.WXK_F8 : "WXK_F8",
+    wx.WXK_F9 : "WXK_F9",
+    wx.WXK_F10 : "WXK_F10",
+    wx.WXK_F11 : "WXK_F11",
+    wx.WXK_F12 : "WXK_F12",
+    wx.WXK_F13 : "WXK_F13",
+    wx.WXK_F14 : "WXK_F14",
+    wx.WXK_F15 : "WXK_F15",
+    wx.WXK_F16 : "WXK_F16",
+    wx.WXK_F17 : "WXK_F17",
+    wx.WXK_F18 : "WXK_F18",
+    wx.WXK_F19 : "WXK_F19",
+    wx.WXK_F20 : "WXK_F20",
+    wx.WXK_F21 : "WXK_F21",
+    wx.WXK_F22 : "WXK_F22",
+    wx.WXK_F23 : "WXK_F23",
+    wx.WXK_F24 : "WXK_F24",
+    wx.WXK_NUMLOCK : "WXK_NUMLOCK",
+    wx.WXK_SCROLL : "WXK_SCROLL",
+    wx.WXK_PAGEUP : "WXK_PAGEUP",
+    wx.WXK_PAGEDOWN : "WXK_PAGEDOWN",
+    wx.WXK_NUMPAD_SPACE : "WXK_NUMPAD_SPACE",
+    wx.WXK_NUMPAD_TAB : "WXK_NUMPAD_TAB",
+    wx.WXK_NUMPAD_ENTER : "WXK_NUMPAD_ENTER",
+    wx.WXK_NUMPAD_F1 : "WXK_NUMPAD_F1",
+    wx.WXK_NUMPAD_F2 : "WXK_NUMPAD_F2",
+    wx.WXK_NUMPAD_F3 : "WXK_NUMPAD_F3",
+    wx.WXK_NUMPAD_F4 : "WXK_NUMPAD_F4",
+    wx.WXK_NUMPAD_HOME : "WXK_NUMPAD_HOME",
+    wx.WXK_NUMPAD_LEFT : "WXK_NUMPAD_LEFT",
+    wx.WXK_NUMPAD_UP : "WXK_NUMPAD_UP",
+    wx.WXK_NUMPAD_RIGHT : "WXK_NUMPAD_RIGHT",
+    wx.WXK_NUMPAD_DOWN : "WXK_NUMPAD_DOWN",
+    #wx.WXK_NUMPAD_PRIOR : "WXK_NUMPAD_PRIOR",
+    wx.WXK_NUMPAD_PAGEUP : "WXK_NUMPAD_PAGEUP",
+    #wx.WXK_NUMPAD_NEXT : "WXK_NUMPAD_NEXT",
+    wx.WXK_NUMPAD_PAGEDOWN : "WXK_NUMPAD_PAGEDOWN",
+    wx.WXK_NUMPAD_END : "WXK_NUMPAD_END",
+    wx.WXK_NUMPAD_BEGIN : "WXK_NUMPAD_BEGIN",
+    wx.WXK_NUMPAD_INSERT : "WXK_NUMPAD_INSERT",
+    wx.WXK_NUMPAD_DELETE : "WXK_NUMPAD_DELETE",
+    wx.WXK_NUMPAD_EQUAL : "WXK_NUMPAD_EQUAL",
+    wx.WXK_NUMPAD_MULTIPLY : "WXK_NUMPAD_MULTIPLY",
+    wx.WXK_NUMPAD_ADD : "WXK_NUMPAD_ADD",
+    wx.WXK_NUMPAD_SEPARATOR : "WXK_NUMPAD_SEPARATOR",
+    wx.WXK_NUMPAD_SUBTRACT : "WXK_NUMPAD_SUBTRACT",
+    wx.WXK_NUMPAD_DECIMAL : "WXK_NUMPAD_DECIMAL",
+    wx.WXK_NUMPAD_DIVIDE : "WXK_NUMPAD_DIVIDE",
+
+    wx.WXK_WINDOWS_LEFT : "WXK_WINDOWS_LEFT",
+    wx.WXK_WINDOWS_RIGHT : "WXK_WINDOWS_RIGHT",
+    wx.WXK_WINDOWS_MENU : "WXK_WINDOWS_MENU",
+
+    wx.WXK_COMMAND : "WXK_COMMAND",
+
+    wx.WXK_SPECIAL1 : "WXK_SPECIAL1",
+    wx.WXK_SPECIAL2 : "WXK_SPECIAL2",
+    wx.WXK_SPECIAL3 : "WXK_SPECIAL3",
+    wx.WXK_SPECIAL4 : "WXK_SPECIAL4",
+    wx.WXK_SPECIAL5 : "WXK_SPECIAL5",
+    wx.WXK_SPECIAL6 : "WXK_SPECIAL6",
+    wx.WXK_SPECIAL7 : "WXK_SPECIAL7",
+    wx.WXK_SPECIAL8 : "WXK_SPECIAL8",
+    wx.WXK_SPECIAL9 : "WXK_SPECIAL9",
+    wx.WXK_SPECIAL10 : "WXK_SPECIAL10",
+    wx.WXK_SPECIAL11 : "WXK_SPECIAL11",
+    wx.WXK_SPECIAL12 : "WXK_SPECIAL12",
+    wx.WXK_SPECIAL13 : "WXK_SPECIAL13",
+    wx.WXK_SPECIAL14 : "WXK_SPECIAL14",
+    wx.WXK_SPECIAL15 : "WXK_SPECIAL15",
+    wx.WXK_SPECIAL16 : "WXK_SPECIAL16",
+    wx.WXK_SPECIAL17 : "WXK_SPECIAL17",
+    wx.WXK_SPECIAL18 : "WXK_SPECIAL18",
+    wx.WXK_SPECIAL19 : "WXK_SPECIAL19",
+    wx.WXK_SPECIAL2 : "WXK_SPECIAL2",
+}

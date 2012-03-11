@@ -1,0 +1,86 @@
+# Copyright (C) 2011 Brian Kyckelhahn
+#
+# Licensed under a Creative Commons Attribution-NoDerivs 3.0 Unported 
+# License (the "License"); you may not use this file except in compliance 
+# with the License. You may obtain a copy of the License at
+#
+#      http://creativecommons.org/licenses/by-nd/3.0/
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+
+from com.android.monkeyrunner import MonkeyRunner, MonkeyDevice
+import os
+import shutil
+import sys
+import time
+
+
+destinationFolderPath = sys.argv[1]
+serialNo = sys.argv[2]
+usingAltSerialNo = sys.argv[3]
+
+
+# It doesn't appear that an outer while loop for recreating 'device' via 
+# waitForConnection() is necessary. I unplugged the Ascend for a minute
+# or more after this script had begun taking screenshots and then re-plugged it in and the
+# screenshot-taking resumed.
+
+device = None
+while not device:
+    try:
+        if usingAltSerialNo == 'False':
+            # Connects to the current device
+            # todo notify the caller if we can't connect?
+            device = MonkeyRunner.waitForConnection(deviceId=serialNo)
+        else:
+            device = MonkeyRunner.waitForConnection()
+    except:
+        device = None
+
+nameOfFileBeingWritten = 'making.device.' + serialNo + '.png'
+savedFilenames = []
+while True:
+    try:
+        monkeyImage = device.takeSnapshot()
+        if monkeyImage:
+            monkeyImage.writeToFile(os.path.join(destinationFolderPath, nameOfFileBeingWritten),
+                                    'png')
+            finishedFilename = 'device.' + serialNo + '.' + str(time.time()) + '.png'
+            shutil.move(os.path.join(destinationFolderPath, nameOfFileBeingWritten),
+                        os.path.join(destinationFolderPath, finishedFilename))
+            savedFilenames.append(finishedFilename)
+        else:
+            pass #print_"monkeyImage was null"
+    except Exception, e:
+        print "gi, Exception: ", e
+
+    # Determine if we've been asked to exit the loop.
+    if os.path.exists(os.path.join(destinationFolderPath, 'stopdevice.' + serialNo)):
+        try:
+            os.remove(os.path.join(destinationFolderPath, 'stopdevice.' + serialNo))
+        except:
+            pass
+        #print_ 'exiting'
+        sys.exit(0)
+        # I've seen 'exiting' appear in the output, and yet the images continued to be captured.
+        # So, break out of the loop.
+        break
+
+
+    # getImageData() in the tool already removes the 'device...png' files, but it's possible that
+    # the tool's process could be killed while the Java process survives. That is at least
+    # possible when the non-exe version of the tool runs. It would be better to have this process
+    # terminate itself once it finds out that the tool process stopped, but how would it learn
+    # that? Can the parent PID change?
+    if len(savedFilenames) > 10:
+        filesToDelete = savedFilenames[:-10]
+        for filename in filesToDelete:
+            try:
+                os.remove(os.path.join(destinationFolderPath, filename))
+            except:
+                pass
