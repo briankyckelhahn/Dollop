@@ -77,6 +77,12 @@ correct. The OCR software will usually produce the same text for similar input i
 </ol>
 
 
+<h1>To Run</h1>
+To run the tool:
+    Dollop/src
+    python gui.py
+
+
 <h1>API</h1>
 <p>The tool automatically converts your interaction with your device into a test script in the form of a Python module. It is not necessary to learn the API presented here to use the tool, but it is documented here for those that want to edit test scripts.</p>
 <dl class="method">
