@@ -18,7 +18,7 @@ sicking lawyers on you for doing so.
 
 <h1>Installation and Running</h1>
 <h2>Pre-requisites</h2>
-<p>Dollop runs on Windows. With at most a few hours of effort, it should run on Linux. It was originally written for Linux and then ported to Windows.</p>
+<p>Dollop runs on Windows. With at most a few hours of effort, it should be possible to edit the code to run on Linux. It was originally written for, and ran well on, Linux and was then ported to Windows.</p>
 
 <p>Install the Android SDK. <span class="important">You might want to experiment with the version of the SDK that you use. I have seen good results with version 12, which is available for Windows via an <a href="http://dl.google.com/android/installer_r12-windows.exe">installer</a> or as a <a href="http://dl.google.com/android/android-sdk_r12-windows.zip">zip file</a>.</span> Later versions have sometimes been sluggish while handling the multiple simultaneous requests that the tool makes. You can install multiple SDKs on a single computer without any conflict. Go to Edit > Configuration after launching the tool and specify the full path to adb in the SDK of your choice. The components the tool uses from the SDK include adb, which is in the platform-tools folder, and monkeyrunner.bat, which is in the tools folder.</p>
 
