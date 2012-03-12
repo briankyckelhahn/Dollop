@@ -14,29 +14,22 @@ the binaries, bytecodes, and other derivatives of code that has been
 changed. However, if you make changes to this project in the course of
 working at a company and want to distribute those changes to your
 co-workers at that company so that they can use those changes in the
-course of their work at that company, Brian has no intention of suing
-you for doing so.
+course of their work at that company, Brian has no intention of
+sicking lawyers on you for doing so.
+
 
 <h1>Installation</h1>
 <h2>Pre-requisites</h2>
-<p>Install the Android SDK. <span class="important">You might want to experiment with the version of the SDK that you use. I have seen good results with version 12, which is available for Windows via an <a href="http://dl.google.com/android/installer_r12-windows.exe">installer</a> or as a <a 
+<p>Dollop runs on Windows. With at most a few hours of effort, it should run on Linux. It was originally written for Linux and then ported to Windows.</p>
 
-href="http://dl.google.com/android/android-sdk_r12-windows.zip">zip file</a>.</span> Later versions have sometimes been sluggish while handling the multiple simultaneous requests that the tool makes. You can install multiple SDKs on a 
+<p>Install the Android SDK. <span class="important">You might want to experiment with the version of the SDK that you use. I have seen good results with version 12, which is available for Windows via an <a href="http://dl.google.com/android/installer_r12-windows.exe">installer</a> or as a <a href="http://dl.google.com/android/android-sdk_r12-windows.zip">zip file</a>.</span> Later versions have sometimes been sluggish while handling the multiple simultaneous requests that the tool makes. You can install multiple SDKs on a single computer without any conflict. Go to Edit > Configuration after launching the tool and specify the full path to adb in the SDK of your choice. The components the tool uses from the SDK include adb, which is in the platform-tools folder, and monkeyrunner.bat, which is in the tools folder.</p>
 
-single computer without any conflict. Go to Edit > Configuration after launching the tool and specify the full path to adb in the SDK of your choice. The components the tool uses from the SDK include adb, which is in the platform-tools 
+<p>Install <a href="http://www.wxpython.org/download.php#stable">wxPython</a>, <a href="http://opencv.willowgarage.com/wiki/InstallGuide">OpenCV</a>.</p>
 
-folder, and monkeyrunner.bat, which is in the tools folder.</p>
 <h2>Installation</h2>
-<p>Dollop is an application for your Windows PC. To get it, provide your email address at the download page. Follow the link in the email you receive. Unzip the download, and execute the 'launcher' executable directly under the 'Dollop' 
 
-folder.</p>
-<p>The tool requires very little configuration. If Android Debug Bridge (adb) is not on your system path, point to it in the field provided within the tool at Edit > Configuration > System. If your device has a custom keycode mapping, 
+<p>The tool requires very little configuration. If Android Debug Bridge (adb) is not on your system path, point to it in the field provided within the tool at Edit > Configuration > System. If your device has a custom keycode mapping, you can edit the default one at Edit > Configuration > Device. The tool communicates with your device using adb over USB. Nothing needs to be installed on your device. So that adb can communicate with it, however, you'll need to enable USB debugging on your device; try something similar to this navigation sequence on your device: Settings > Applications > Development and enable "USB Debugging". Also, open the "USB Connection" dialog from the notification bar and select "PC Mode" or something similar.</p>
 
-you can edit the default one at Edit > Configuration > Device. The tool communicates with your device using adb over USB. Nothing needs to be installed on your device. So that adb can communicate with it, however, you'll need to enable 
-
-USB debugging on your device; try something similar to this navigation sequence on your device: Settings > Applications > Development and enable "USB Debugging". Also, open the "USB Connection" dialog from the notification bar and select 
-
-"PC Mode" or something similar.</p>
 <h2 id="recording">Recording &nbsp; and &nbsp; Playing &nbsp; Tests</h2>
 <div class="instructions">
 <ol class="instructions">
