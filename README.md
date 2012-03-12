@@ -1,11 +1,9 @@
 <h1>License and Copyright Information</h1>
-For instructions on installing and running this code, see the project
-website.
-
-This project was created and is maintained by Brian Kyckelhahn. You
-are welcome to contribute to it, and you will be acknowledged in the
-contributors file for doing so, but you surrender your copyright to
-Brian when you make contributions.
+This project was created and is maintained by <a
+href="briankyckelhahn.com">Brian Kyckelhahn</a>, an independent mobile
+app developer in Austin, Texas. You are welcome to contribute to it,
+and you will be acknowledged in the contributors file for doing so,
+but you surrender your copyright to Brian when you make contributions.
 
 This project is licensed under a Creative Commons Attribution-NoDerivs
 3.0 Unported license. That means that you cannot distribute changes
@@ -18,7 +16,7 @@ course of their work at that company, Brian has no intention of
 sicking lawyers on you for doing so.
 
 
-<h1>Installation</h1>
+<h1>Installation and Running</h1>
 <h2>Pre-requisites</h2>
 <p>Dollop runs on Windows. With at most a few hours of effort, it should run on Linux. It was originally written for Linux and then ported to Windows.</p>
 
@@ -29,6 +27,12 @@ sicking lawyers on you for doing so.
 <h2>Installation</h2>
 
 <p>The tool requires very little configuration. If Android Debug Bridge (adb) is not on your system path, point to it in the field provided within the tool at Edit > Configuration > System. If your device has a custom keycode mapping, you can edit the default one at Edit > Configuration > Device. The tool communicates with your device using adb over USB. Nothing needs to be installed on your device. So that adb can communicate with it, however, you'll need to enable USB debugging on your device; try something similar to this navigation sequence on your device: Settings > Applications > Development and enable "USB Debugging". Also, open the "USB Connection" dialog from the notification bar and select "PC Mode" or something similar.</p>
+
+## To Run
+To run the tool:<br/>
+    <tt>cd Dollop/src</tt><br/>
+    <tt>python gui.py</tt><br/>
+
 
 <h2 id="recording">Recording &nbsp; and &nbsp; Playing &nbsp; Tests</h2>
 <div class="instructions">
@@ -68,12 +72,6 @@ running. Simple tests are processed in a few seconds; very large tests may requi
 correct. The OCR software will usually produce the same text for similar input images, so you may want to rely on the image alone if the text found is not what you want.</li>
 <li>You can continue to modify the Python test module in any way you like. Add control structures such as for loops, add new routines, import modules, etc.</li>
 </ol>
-
-
-# To Run
-To run the tool:
-    <tt>cd Dollop/src</tt><br/>
-    <tt>python gui.py</tt><br/>
 
 
 <h1>API</h1>
