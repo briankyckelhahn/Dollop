@@ -12,11 +12,13 @@
 
 
 <h1>License and Copyright Information</h1>
+
 This project was created and is maintained by <a
-href="briankyckelhahn.com">Brian Kyckelhahn</a>, an independent mobile
-app developer in Austin, Texas. You are welcome to contribute to it,
-and you will be acknowledged in the contributors file for doing so,
-but you surrender your copyright to Brian when you make contributions.
+href="http://briankyckelhahn.com">Brian Kyckelhahn</a>, an independent
+mobile app developer in Austin, Texas. You are welcome to contribute
+to it, and you will be acknowledged in the contributors file for doing
+so, but you surrender your copyright to Brian when you make
+contributions.
 
 This project is licensed under a Creative Commons Attribution-NoDerivs
 3.0 Unported license. That means that you cannot distribute changes
