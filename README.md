@@ -1,3 +1,16 @@
+<h1>About</h1>
+  <p>The Dollop Test Tool is a desktop application that you can use to create tests of your Android apps.</p>
+  <ul>
+	  <li>No programming is required, though you can modify the generated Python test module if you like.</li>
+	  <li>Convert your manual test to an automated test just by pressing 'Record' and interacting with the tool.</li>
+	  <li>Test your apps, third-party apps, web pages - almost everything.</li>
+	  <li>Understands taps, drags, long presses, text and keycode input.</li>
+	  <li>Image-based - works well with images but also recognizes text.</li>
+	  <li>Screenshots are saved both of playback and recording sessions, giving you a better idea of what went wrong during your test.</li>
+	</ul>
+      </p>
+
+
 <h1>License and Copyright Information</h1>
 This project was created and is maintained by <a
 href="briankyckelhahn.com">Brian Kyckelhahn</a>, an independent mobile
@@ -14,19 +27,6 @@ working at a company and want to distribute those changes to your
 co-workers at that company so that they can use those changes in the
 course of their work at that company, Brian has no intention of
 sicking lawyers on you for doing so.
-
-
-<h1>About</h1>
-  <p>The Dollop Test Tool is a desktop application that you can use to create tests of your Android apps.</p>
-  <ul>
-	  <li>No programming is required, though you can modify the generated Python test module if you like.</li>
-	  <li>Convert your manual test to an automated test just by pressing 'Record' and interacting with the tool.</li>
-	  <li>Test your apps, third-party apps, web pages - almost everything.</li>
-	  <li>Understands taps, drags, long presses, text and keycode input.</li>
-	  <li>Image-based - works well with images but also recognizes text.</li>
-	  <li>Screenshots are saved both of playback and recording sessions, giving you a better idea of what went wrong during your test.</li>
-	</ul>
-      </p>
 
 
 <h1>Installation and Running</h1>
