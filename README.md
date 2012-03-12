@@ -9,11 +9,13 @@ Brian when you make contributions.
 
 This project is licensed under a Creative Commons Attribution-NoDerivs
 3.0 Unported license. That means that you cannot distribute changes
-you make to this project. However, if you make changes to this project
-in the course of working at a company and want to distribute those
-changes to your co-workers at that company so that they can use those
-changes in the course of their work at that company, Brian has no
-intention of suing you for doing so.
+you make to this project. You are also prohibited from distributing
+the binaries, bytecodes, and other derivatives of code that has been
+changed. However, if you make changes to this project in the course of
+working at a company and want to distribute those changes to your
+co-workers at that company so that they can use those changes in the
+course of their work at that company, Brian has no intention of suing
+you for doing so.
 
 <h1>Installation</h1>
 <h2>Pre-requisites</h2>
