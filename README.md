@@ -79,8 +79,8 @@ correct. The OCR software will usually produce the same text for similar input i
 
 # To Run
 To run the tool:
-    cd Dollop/src
-    python gui.py
+    <tt>cd Dollop/src</tt><br/>
+    <tt>python gui.py</tt><br/>
 
 
 <h1>API</h1>
