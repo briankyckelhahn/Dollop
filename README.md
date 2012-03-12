@@ -16,6 +16,19 @@ course of their work at that company, Brian has no intention of
 sicking lawyers on you for doing so.
 
 
+<h1>About</h1>
+  <p>The Dollop Test Tool is a desktop application that you can use to create tests of your Android apps.</p>
+  <ul>
+	  <li>No programming is required, though you can modify the generated Python test module if you like.</li>
+	  <li>Convert your manual test to an automated test just by pressing 'Record' and interacting with the tool.</li>
+	  <li>Test your apps, third-party apps, web pages - almost everything.</li>
+	  <li>Understands taps, drags, long presses, text and keycode input.</li>
+	  <li>Image-based - works well with images but also recognizes text.</li>
+	  <li>Screenshots are saved both of playback and recording sessions, giving you a better idea of what went wrong during your test.</li>
+	</ul>
+      </p>
+
+
 <h1>Installation and Running</h1>
 <h2>Pre-requisites</h2>
 <p>Dollop runs on Windows. With at most a few hours of effort, it should be possible to edit the code to run on Linux. It was originally written for, and ran well on, Linux and was then ported to Windows.</p>
