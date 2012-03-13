@@ -12,6 +12,15 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+
+
+# ***********************************************************************
+# NOTE: SOME METHODS HERE BELONG IN gui.py, BUT WERE ORIGINALLY PLACED 
+# HERE SO THAT CYTHON COULD BE RUN ON THEM.
+# ***********************************************************************
+
+
+
 import binascii
 import bz2
 import ConfigParser
