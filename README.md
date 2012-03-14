@@ -118,7 +118,7 @@ causes the device to respond differently than it would to a tap, such as by popp
 <dl class="method">
 			    <dt>device.drag(<em>targetImagePath</em>=None, <em>dragRightUnits</em>=None, <em>dragDownUnits</em>=None, <em>dragStartRegion</em>=None, <em>characters</em>=None, <em>waitForStabilization</em>=False)</dt>
 			  <dd>
-			  <p>drag is like tap() in that it searches the device screen image for the smaller, target image and characters, if provided, but it will proceed with the drag even if the target is not found. For this method, 
+			  <p>drag is like tap() in that it searches the device screen image for the smaller, target image and characters, if provided, but it will proceed <em>immediately</em> with the drag even if the target is not found. For this method, 
 
 the screen is conceptually divided into 9 sections, with three divisions across and three vertically. <tt>dragStartRegion</tt> is represented as a binary tuple, the first element being an integer representing the (1-based) index of the 
 
@@ -127,6 +127,8 @@ column in this conceptual matrix, and with the second being the integer represen
 and with x increasing to the right and y increasing <em>down</em>. Downward-increasing y is a convention often used in the image processing field. For example, (1, 3) represents the section of your screen taking about 1/9<sup>th</sup> 
 
 the total screen area and located in the bottom left corner of the screen.</p>
+
+    	  	      	  <p>If it is critical that the tool drag the item, and not just the region of the screen where the item was found during testing, and you find that the tool is not dragging the item, it may be because the tool is designed to be quick in conducting drags and, if the screen has just changed and the update has not made it to the tool, the tool will be working with an old image. So, one way to make your test behave the way you want is to put in a sleep before the <tt>drag</tt>, to ensure that the update gets to the tool. Another is to put a <tt>tap</tt> on the <tt>drag</tt>'s target image just before the drag</tt>.
 			  </dd></dl>
 
 <dl class="method">

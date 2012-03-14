@@ -680,7 +680,6 @@ def findTargetInImageFile(self, imageString, targetImagePath, characters=None):
     # they do the same thing.
     cv.CvtColor(invertedColorTargetImage, targetImage, cv.CV_RGB2BGR)
     targetImageString = targetImage.tostring()
-    dprint("targetImageString[:50]:", targetImageString[:50])
     target = cv.CreateImageHeader((targetImage.width, targetImage.height), cv.IPL_DEPTH_8U, 3)
     cv.SetData(target, targetImageString)
     if constants.DEBUGGING_IMAGE_FINDING:
@@ -699,8 +698,6 @@ def findTargetInImageFile(self, imageString, targetImagePath, characters=None):
         bdbg()
     dprint("matchtemplate, len(imageString):", len(imageString))
     dprint("matchtemplate, len(targetImageString):", len(targetImageString))
-    #dprint("self.width:", self.width)
-    #dprint("self.height:", self.height)
     cv.MatchTemplate(screen, target, resultMap, cv.CV_TM_CCOEFF_NORMED)
     dprint('after matchtemplate')
     mask = cv.CreateImageHeader((resultWidth, resultHeight),
@@ -918,11 +915,12 @@ def dragUsingTargetImage(self, orientation, targetImagePath, screenImageString, 
     # self is an instance of gui.py:Device.
     maxLoc, success = findTargetInImageFile(self, screenImageString, targetImagePath, characters=characters)
     if success == constants.SUB_EVENT_PASSED:
-        traceLogger.debug("Found drag target at " + str(maxLoc))
+        dprint("Found drag target at " + str(maxLoc))
         x = maxLoc[0]
         y = maxLoc[1]
         newX, newY = _getCoordsAtMoveEnd(self, orientation, x, y, dragRightUnits, dragDownUnits)
     else:
+        dprint("Did not find drag target")
         # drag inputevents start region to destination region
         if orientation in (constants.PORTRAIT, constants.UNKNOWN_SCREEN_ORIENTATION):
             regionWidth = self.width / float(constants.NUMBER_OF_REGION_COLUMNS)

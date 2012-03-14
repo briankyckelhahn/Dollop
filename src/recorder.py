@@ -101,7 +101,8 @@ class Recorder(object):
 
         # When timeOfClick is provided, it's a floating-point number,
         # as returned by time.time().
-        # XXX At the momemnt, recordclick has only one device per recorder. keep it that way until more pressing problmes solved
+        # XXX At the momemnt, recordclick has only one device per recorder. keep it that way until more pressing 
+        #     problmes solved
 
         # Add 1 to TARGET_IMAGE_SQUARE_WIDTH / 2 so that the number of pixels to
         # the left of the center pixel
@@ -111,47 +112,17 @@ class Recorder(object):
         # OpenCV's GetRectSubPix may do this.
         targetImageLeftX = max(x - constants.TARGET_IMAGE_SQUARE_WIDTH / 2 + constants.EVEN_WIDTH_ADDITION, 0)
         # Subtract 1 from the width because the array is 0-based.
-        targetImageRightX = min(width - 1, x + constants.TARGET_IMAGE_SQUARE_WIDTH / 2 + constants.TARGET_IMAGE_SQUARE_WIDTH % 2)
+        targetImageRightX = min(width - 1, 
+                                x + constants.TARGET_IMAGE_SQUARE_WIDTH / 2 + constants.TARGET_IMAGE_SQUARE_WIDTH % 2)
         targetImageWidth = targetImageRightX - targetImageLeftX + 1
         targetImageTopY = max(y - constants.TARGET_IMAGE_SQUARE_WIDTH / 2 + constants.EVEN_HEIGHT_ADDITION, 0)
         # Subtract 1 from the height because the array is 0-based.
-        targetImageBottomY = min(height - 1, y + constants.TARGET_IMAGE_SQUARE_WIDTH / 2 + constants.TARGET_IMAGE_SQUARE_WIDTH % 2)
+        targetImageBottomY = min(height - 1, 
+                                 y + constants.TARGET_IMAGE_SQUARE_WIDTH / 2 + constants.TARGET_IMAGE_SQUARE_WIDTH % 2)
         targetImageHeight = targetImageBottomY - targetImageTopY + 1
 
-        # get the rows of the target image into an array
-        # Northwest zero means bottom is larger than top.
-        # for rowIndex in range(targetImageTopY, targetImageBottomY + 1):
-        #     leftPixelIndex = rowIndex * width * constants.NUMBER_OF_IMAGE_CHANNELS + targetImageLeftX * constants.NUMBER_OF_IMAGE_CHANNELS
-        #     # zero-indexed row number * length of row in pixels * number of channels + zero-indexed column number * number of channels
-        #     rightPixelIndex = rowIndex * width * constants.NUMBER_OF_IMAGE_CHANNELS + targetImageRightX * constants.NUMBER_OF_IMAGE_CHANNELS
-        #     # Adding constants.NUMBER_OF_IMAGE_CHANNELS to add the rightmost pixel.
-        #     imageStringAddition = imageString[leftPixelIndex : rightPixelIndex + constants.NUMBER_OF_IMAGE_CHANNELS]
-        #     targetImageString += imageStringAddition
-
-        # screen = cv.CreateImageHeader((width, height), cv.IPL_DEPTH_8U, 3)
-        # cv.SetData(screen, lcdImageString)
-        # cv.NamedWindow('Screen')
-        # cv.ShowImage('Screen', screen)
-        # cv.WaitKey(0)
-
-        # # is targetimagestring length correct? do pixels have right color?
-        # target = cv.CreateImageHeader((targetImageWidth, targetImageHeight), cv.IPL_DEPTH_8U, 3)
-        # cv.SetData(target, targetImageString)
-        # cv.NamedWindow('Target')
-        # cv.ShowImage('Target', target)
-        # cv.WaitKey(0)
         self.cachedClicks.append((session, serialNo, clickType, x, y, targetImageWidth,
                                   targetImageHeight, imageFilename, timeOfClick))
-        # # resultWidth = width - targetImageWidth + 1
-        # # resultHeight = height - targetImageHeight + 1
-        # # resultMap = cv.CreateImageHeader((resultWidth, resultHeight),
-        # #                                  cv.IPL_DEPTH_32F,
-        # #                                  1)
-        # # cv.SetData(resultMap, '\x00\x00\x00\x00' * resultWidth * resultHeight * 1)
-        # # cv.MatchTemplate(screen, target, resultMap, cv.CV_TM_CCOEFF_NORMED)
-        # # cv.NamedWindow('resultMapWindow')
-        # # cv.ShowImage('resultMapWindow', resultMap)
-        # # cv.WaitKey(0)
 
 
     def flushClicks(self):

@@ -42,14 +42,18 @@ def establishDBConnection(dbName):
 
 
 def executeSQL(cur, sqlString, statementParameters=()):
+    corruptedMessage = "We're sorry, but it seems that the database that is used to store tests on your machine has "
+    corruptedMessage += "become corrupted. A backup database will be restored. The possibly-corrupted database is being "
+    corruptedMessage += "moved to "
     try:
+
         cur.execute(sqlString, statementParameters)
     except sqlite3.DatabaseError, e:
         if "file is encrypted or is not a database" in e:
             corruptedDBPath = os.path.join(globals_.getUserDocumentsPath(), constants.APP_DIR, constants.DB_FILENAME)
-            newCorruptedDBPath = os.path.join(globals_.getUserDocumentsPath(), constants.APP_DIR, constants.DB_FILENAME + ".maybeCorrupted")
-            showErrorDialog("Database error",
-                            "We're sorry, but it seems that the database that is used to store tests on your machine has become corrupted. A backup database will be restored. The possibly-corrupted database is being moved to " + newCorruptedDBPath + ".")
+            newCorruptedDBPath = os.path.join(globals_.getUserDocumentsPath(), constants.APP_DIR, 
+                                              constants.DB_FILENAME + ".maybeCorrupted")
+            showErrorDialog("Database error", corruptedMessage + newCorruptedDBPath + ".")
             shutil.move(corruptedDBPath, newCorruptedDBPath)
             shutil.copyfile(corruptedDBPath + '.backup', corruptedDBPath)
             # We raise an exception. If we didn't raise an exception, the method that made the call
@@ -67,10 +71,12 @@ def executeSQL(cur, sqlString, statementParameters=()):
             cur.execute(sqlString, statementParameters)
         except sqlite3.DatabaseError, e:
             if "file is encrypted or is not a database" in e:
-                corruptedDBPath = os.path.join(globals_.getUserDocumentsPath(), constants.APP_DIR, constants.DB_FILENAME)
-                newCorruptedDBPath = os.path.join(globals_.getUserDocumentsPath(), constants.APP_DIR, constants.DB_FILENAME + ".maybeCorrupted")
-                showErrorDialog("Database error",
-                                "We're sorry, but it seems that the database that is used to store tests on your machine has become corrupted. A backup database will be restored. The possibly-corrupted database is being moved to " + newCorruptedDBPath + ".")
+                corruptedDBPath = os.path.join(globals_.getUserDocumentsPath(), constants.APP_DIR,
+                                               constants.DB_FILENAME)
+                newCorruptedDBPath = os.path.join(globals_.getUserDocumentsPath(), constants.APP_DIR, 
+                                                  constants.DB_FILENAME + ".maybeCorrupted")
+                
+                showErrorDialog("Database error", corruptedMessage + newCorruptedDBPath + ".")
                 shutil.move(corruptedDBPath, newCorruptedDBPath)
                 shutil.copyfile(corruptedDBPath + '.backup', corruptedDBPath)
                 # We raise an exception. If we didn't raise an exception, the method that made the call
@@ -249,7 +255,8 @@ class Storage(object):
             # characters and keycodes are space-separated strings of character codes
             # dragStartRegion and dragEndRegion are binary tuples of 1-based coordinates in the form (column, row),
             # where row numbering increases down.
-            # dragEndRegion is redundant b/c it's determined by dragStartRegion, dragRightUnits, and dragDownUnits. Ignore it.
+            # dragEndRegion is redundant b/c it's determined by dragStartRegion, dragRightUnits, and dragDownUnits.
+            # Ignore it.
             
             # index_ is of type real so that (in the future) an event can be inserted between existing events
             # w/o updating all of the events that follow it.
@@ -388,29 +395,6 @@ class Storage(object):
              timeWithSubseconds text,
              textOutput text,
              PRIMARY KEY (session, serialNo, timeWithSubseconds))""")
-
-        # try:
-        #     executeSQL(cur, "SELECT * FROM rawInputEvents LIMIT 1")
-        # except sqlite3.OperationalError, e:
-        #     executeSQL(cur, """CREATE VIEW rawInputEvents AS SELECT clicks.session AS session, clicks.serialNo AS serialNo, clicks.timeWithSubseconds AS time,
-        #     clickType AS type, x, y, targetWidth, targetHeight, targetImageString, lcdImageString,
-        #     0 AS index_, 0 AS keyEventsSessionID, 0 AS keycode, '' AS text_, 0 AS wait FROM clicks join
-        #     savedScreens on clicks.session=savedScreens.session AND clicks.serialNo=savedScreens.serialNo
-        #     AND clicks.timeWithSubseconds=savedScreens.timeWithSubseconds UNION
-        #     SELECT keyEventsSessions.session AS session, keyEventsSessions.serialNo AS serialNo, keyEventsSessions.startSeconds AS time,
-        #     {KEYEVENT} AS type, 0 AS x, 0 AS y, 0 AS targetWidth, 0 AS targetHeight, 0 AS targetImageString,
-        #     0 AS lcdImageString, keyEvents.index_ AS index_, keyEvents.keyEventsSessionID AS
-        #     keyEventsSessionID, keyEvents.keycode AS keycode, '' AS text_, 0 AS wait FROM keyEventsSessions JOIN
-        #     keyEvents ON keyEventsSessions.ROWID=keyEvents.keyEventsSessionID 
-        #     UNION SELECT textToVerify.session AS session, textToVerify.serialNo, textToVerify.timeWithSubseconds
-        #     AS time, {TEXTVERIFY} AS type, 0 AS x, 0 AS y, 0 AS targetWidth, 0 AS targetHeight, 0 AS
-        #     targetImageString, 0 AS lcdImageString, 0 AS index_, 0 AS keyEventsSessionID, 0 AS keycode,
-        #     textToVerify.text_ AS text_, 0 AS wait FROM textToVerify UNION SELECT waits.session AS session,
-        #     '' AS serialNo, waits.timeWithSubseconds AS time, {WAIT} AS type, 0 AS x, 0 AS y, 0 AS
-        #     targetWidth, 0 AS targetHeight, 0 AS targetImageString, 0 AS lcdImageString, 0 AS index_,
-        #     0 AS keyEventsSessionID, 0 AS keycode, '' AS text_, seconds AS wait FROM waits ORDER BY time,
-        #     index_""".format(KEYEVENT=constants.KEY_EVENT, TEXTVERIFY=constants.TEXT_TO_VERIFY, WAIT=constants.WAIT),
-        #           )
             
         conn.commit()
         cur.close()
@@ -906,8 +890,6 @@ class Storage(object):
 
                 fp.write('\n')
 
-#            executeSQL(cur, "INSERT INTO events (session, index_, startTime, inputType, characters, targetImageWidth, targetImageHeight, targetImageString, keycodes, textToVerify, wait, dragStartRegion, dragEndRegion, dragRightUnits, dragDownUnits) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
-#                       (sessionPath, index, startTime, inputType, characters, targetImageWidth, targetImageHeight, None if not targetImageString else sqlite3.Binary(targetImageString), None if not keycodes else ' '.join([str(x) for x in keycodes]), textToVerify, wait, None if not dragStartRegion else str(dragStartRegion), None if not dragEndRegion else str(dragEndRegion), dragRightUnits, dragDownUnits))
         except Exception, e:
             bdbg()
             dprint('err')

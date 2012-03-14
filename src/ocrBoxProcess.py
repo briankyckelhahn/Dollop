@@ -154,7 +154,8 @@ class OCRBoxProcess(utils.Process):
                     devices = self.recorder.getDevicesOfSession(thisSession)
                     deviceData = {}
                     for serialNo, width, lcdHeight, maxADBCommandLength, chinBarHeight, chinBarImageString, orientation in devices:
-                        deviceData[serialNo] = (width, lcdHeight + chinBarHeight, chinBarHeight, chinBarImageString, orientation)
+                        deviceData[serialNo] = (width, lcdHeight + chinBarHeight, chinBarHeight, chinBarImageString,
+                                                orientation)
             click = self.recorder.getUnprocessedEventForSession(thisSession, deviceData)
             if not click:
                 globals_.traceLogger.debug("OCRBoxProcess.run() in while: finished.")

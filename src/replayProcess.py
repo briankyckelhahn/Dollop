@@ -56,7 +56,7 @@ class EventFailedException(Exception):
 
 class ReplayProcess(utils.Process):
     """Replays a session."""
-    def __init__(self, recorder, playName, testFilePath, testIndex, inputEvents, deviceData, adbPath=None, 
+    def __init__(self, recorder, playName, testFilePath, testIndex, inputEvents, deviceData, adbPath=None,
                  xScale=None, yScale=None, xIntercept=None, yIntercept=None,
                  replayControlQueue=None, 
                  eventsBoxQueue=None, 
@@ -68,7 +68,7 @@ class ReplayProcess(utils.Process):
         self.playName = playName
         self.testFilePath = testFilePath
         self.testIndex = testIndex
-        # XXX there's just one deviceWindow at the momemtn.
+        # XXX there's just one deviceWindow at the moment.
         self.inputEvents = inputEvents
         self.deviceData = deviceData
         self.adbPath = adbPath
@@ -160,9 +160,9 @@ class ReplayProcess(utils.Process):
                 # Don't know how we'd get here; perhaps the image hasn't been completely written.
                 #dprint("_getLatestImageStringFromFile: exception opening image")
                 #dprint("image exists?:", 
-                #       os.path.join(globals_.getUserDocumentsPath(), constants.APP_DIR, latestImageName), 
-                #       " ", 
-                #       os.path.exists(os.path.join(globals_.getUserDocumentsPath(), constants.APP_DIR, latestImageName)))
+                #     os.path.join(globals_.getUserDocumentsPath(), constants.APP_DIR, latestImageName), 
+                #     " ", 
+                #     os.path.exists(os.path.join(globals_.getUserDocumentsPath(), constants.APP_DIR, latestImageName)))
                 time.sleep(0.1)
             else:
                 try:
@@ -357,11 +357,6 @@ class ReplayProcess(utils.Process):
         testModule = __import__(moduleName, [], [], [], -1)
         userDevice = UserDevice(self, self.device, orientation)
 
-        #with open(self.testFilePath, 'r') as fp: # TODO this has to be changed to self.testName, which is substituted into the imageFilenames as they're retreived. 
-        #    rawCode = fp.read()
-        #objectCode = compile(rawCode, '<string>', 'exec')
-        #try:
-        #    eval(objectCode)
         try:
             testModule.main(userDevice)
         except EventTimeout, e:
@@ -419,7 +414,7 @@ class UserDevice(object):
         self.previousDragDownUnits = None
 
 
-#find all instances of inputeventnumber and ensure they're being determined appropriately
+# XXX find all instances of inputeventnumber and ensure they're being determined appropriately
 
     def _dragSearch(self, findingRoutine, oldImageString, oldImageFilename, findingRoutineArg2=None,
                     findingRoutineArg3=None, findingRoutineArg4=None):
@@ -484,7 +479,8 @@ class UserDevice(object):
                 try:
                     # The drag may have succeeded in moving the screen.
                     dprint("_dragSearch(): images are different. Calling the finding routine.")
-                    value, status = findingRoutine(imageString, findingRoutineArg2, findingRoutineArg3, findingRoutineArg4)
+                    value, status = findingRoutine(imageString, findingRoutineArg2, findingRoutineArg3, 
+                                                   findingRoutineArg4)
                     dprint("_dragSearch(): images are different. The finding routine returned " + str(status))
                     if status == constants.SUB_EVENT_PASSED:
                         dprint('findingRoutine reported success')
@@ -540,9 +536,11 @@ class UserDevice(object):
                         maxWaitTime=constants.MAX_DEFAULT_WAIT_TIME_TO_FIND_TARGET,
                         dragSearchPermitted=constants.DRAG_SEARCH_PERMITTED):
         dprint("_tapOrLongPress, start time:", time.time())
-        screenImageString, imageFilename = self.replayProcess._getLatestImageStringFromFile(self.device.serialNo, self.chinBarImageString)
+        screenImageString, imageFilename = self.replayProcess._getLatestImageStringFromFile(self.device.serialNo, 
+                                                                                            self.chinBarImageString)
         dprint("screenImageString[:50]:", screenImageString[:50])
-        maxLoc, success = utils.findTargetInImageFile(self.device, screenImageString, targetImagePath, characters=characters)
+        maxLoc, success = utils.findTargetInImageFile(self.device, screenImageString, targetImagePath, 
+                                                      characters=characters)
         userWantsToStop = self.replayProcess._getControlMessages()
         if userWantsToStop:
             return
@@ -556,8 +554,8 @@ class UserDevice(object):
             elif inputType == constants.LONG_PRESS:
                 self.device.longPress(x, y)
 
-            self.replayProcess.recorder.savePlayClick(self.replayProcess.testFilePath, self.replayProcess.playName, self.device.serialNo,
-                                                      inputType, x, y, "", True)
+            self.replayProcess.recorder.savePlayClick(self.replayProcess.testFilePath, self.replayProcess.playName, 
+                                                      self.device.serialNo, inputType, x, y, "", True)
             return
 
         else:
@@ -580,7 +578,8 @@ class UserDevice(object):
                 _, screenImageString, imageFilename = \
                     self.replayProcess.getNewImageString(screenImageString, imageFilename, self.device.serialNo,
                                                          self.chinBarImageString, waitType='newFile')
-                maxLoc, success = utils.findTargetInImageFile(self.device, screenImageString, targetImagePath, characters=characters)
+                maxLoc, success = utils.findTargetInImageFile(self.device, screenImageString, targetImagePath, 
+                                                              characters=characters)
                 if success == constants.SUB_EVENT_PASSED:
                     x = maxLoc[0]
                     y = maxLoc[1]
@@ -588,7 +587,8 @@ class UserDevice(object):
                         self.device.tap(x, y) 
                     elif inputType == constants.LONG_PRESS:
                         self.device.longPress(x, y)
-                        self.replayProcess.recorder.savePlayClick(self.replayProcess.testFilePath, self.replayProcess.playName, self.device.serialNo,
+                        self.replayProcess.recorder.savePlayClick(self.replayProcess.testFilePath, 
+                                                                  self.replayProcess.playName, self.device.serialNo,
                                                                   inputType, x, y, "", True)
                     else:
                         pass
@@ -602,7 +602,7 @@ class UserDevice(object):
                 # _dragSearch calls getNewImageString with waitTilStable=True, so we don't 
                 # need to wait further.
                 maxLoc, status, screenImageString, imageFilename = \
-                    self._dragSearch(self.device.findTargetInImageFile, screenImageString,    # findTargetFromInputEvent has to be changed to sth else.
+                    self._dragSearch(self.device.findTargetInImageFile, screenImageString,
                                      imageFilename, targetImagePath, characters)
                 if status == 'found':
                     x = maxLoc[0]
@@ -612,7 +612,8 @@ class UserDevice(object):
                     elif inputType == constants.LONG_PRESS:
                         self.device.longPress(x, y)
 
-                    self.replayProcess.recorder.savePlayClick(self.replayProcess.testFilePath, self.replayProcess.playName, self.device.serialNo,
+                    self.replayProcess.recorder.savePlayClick(self.replayProcess.testFilePath, 
+                                                              self.replayProcess.playName, self.device.serialNo,
                                                               inputType, x, y, "", True)
                     return
                 elif status == 'not found':
@@ -621,34 +622,39 @@ class UserDevice(object):
                     globals_.traceLogger.debug("User stopped test.")
                     return
             else:
-                globals_.traceLogger.debug("Failed to find the target image. Drag search not permitted by configuration.")
+                message = "Failed to find the target image. Drag search not permitted by configuration."
+                globals_.traceLogger.debug(message)
 
                 dprint("_tapOrLongPress, bottom of finding loop:", time.time())
 
             methodRepr = "tap" if inputType == constants.TAP else "longPress"
-            callRepr = "{method}(targetImagePath={imgPath}, characters={chars}, chinBarImagePath={chin}, maxWaitTime={wait}, dragSearchPermitted={drag})"
-            callRepr = callRepr.format(method=methodRepr, imgPath=quotify(targetImagePath), chars=quotify(characters), chin=quotify(chinBarImagePath), 
-                                       wait=maxWaitTime, drag=dragSearchPermitted)
+            callRepr = "{method}(targetImagePath={imgPath}, characters={chars}, chinBarImagePath={chin}, "
+            callRepr += "maxWaitTime={wait}, dragSearchPermitted={drag})"
+            callRepr = callRepr.format(method=methodRepr, imgPath=quotify(targetImagePath), chars=quotify(characters), 
+                                       chin=quotify(chinBarImagePath), wait=maxWaitTime, drag=dragSearchPermitted)
             okprint("failed: " + callRepr)
             raise EventFailedException()
 
 
     def _isThisTextPresent(self, imageString, text, isRE=False, maximumAcceptablePercentageDistance=0):
-        return self.device.isThisTextPresent(text, imageString, isRE=isRE, maximumAcceptablePercentageDistance=maximumAcceptablePercentageDistance)
+        return self.device.isThisTextPresent(text, imageString, isRE=isRE, 
+                                             maximumAcceptablePercentageDistance=maximumAcceptablePercentageDistance)
 
 
-    def drag(self, targetImagePath=None, dragRightUnits=None, dragDownUnits=None, dragStartRegion=None, characters=None, 
+    def drag(self, targetImagePath=None, dragRightUnits=None, dragDownUnits=None, dragStartRegion=None, characters=None,
              waitForStabilization=False):
         # The user or the method writing the output of the recording session should make waitForStabilization 
         # True if there is a tap, long press, or text verification after this drag.
 
-#        dragUsingTargetImage(self, self.orientation, targetImagePath, screenImageString, dragRightUnits, dragDownUnits, dragStartRegion, characters=None):
         if characters:
              okprint("Looking for an image near these characters:", characters)
-        screenImageString, screenImageFilename = self.replayProcess._getLatestImageStringFromFile(self.device.serialNo, self.chinBarImageString)
+        screenImageString, screenImageFilename = self.replayProcess._getLatestImageStringFromFile(
+             self.device.serialNo, 
+             self.chinBarImageString)
         traceLogger.debug("inputType == constants.DRAG:")
-        dragWasPerformed = utils.dragUsingTargetImage(self.device, self.orientation, targetImagePath, screenImageString, 
-                                                      dragRightUnits, dragDownUnits, dragStartRegion, characters=characters)
+        dragWasPerformed = utils.dragUsingTargetImage(self.device, self.orientation, targetImagePath, screenImageString,
+                                                      dragRightUnits, dragDownUnits, dragStartRegion, 
+                                                      characters=characters)
         userWantsToStop = self.replayProcess._getControlMessages()
         if userWantsToStop:
             return
@@ -683,7 +689,6 @@ class UserDevice(object):
     def verifyText(self, textToVerify, maxWaitTime=constants.MAX_DEFAULT_WAIT_TIME_TO_FIND_TARGET,
                    dragSearchPermitted=constants.DRAG_SEARCH_PERMITTED, isRE=False,
                    maximumAcceptablePercentageDistance=0):
-        # The logic of this test was inefficient and wrong in the master branch (before editable scripts were implemented).
         def callRepr():
              call = "verifyText({txt}, maxWaitTime={wait}, dragSearchPermitted={drag}, isRE={isRE}, "
              call += "maximumAcceptablePercentageDistance={dist})"
@@ -691,10 +696,12 @@ class UserDevice(object):
                                 dist=maximumAcceptablePercentageDistance)
              return call
 
-        screenImageString, screenImageFilename = self.replayProcess._getLatestImageStringFromFile(self.device.serialNo,
-                                                                                                  self.chinBarImageString)
-        _, success = self.device.isThisTextPresent(textToVerify, screenImageString, isRE=isRE,
-                                                   maximumAcceptablePercentageDistance=maximumAcceptablePercentageDistance)
+        screenImageString, screenImageFilename = self.replayProcess._getLatestImageStringFromFile(
+             self.device.serialNo,
+             self.chinBarImageString)
+        _, success = self.device.isThisTextPresent(
+             textToVerify, screenImageString, isRE=isRE,
+             maximumAcceptablePercentageDistance=maximumAcceptablePercentageDistance)
         userWantsToStop = self.replayProcess._getControlMessages()
         if userWantsToStop:
             return
@@ -715,8 +722,9 @@ class UserDevice(object):
                 _, screenImageString, screenImageFilename = \
                     self.replayProcess.getNewImageString(screenImageString, screenImageFilename, self.device.serialNo,
                                                          self.chinBarImageString, waitType='newFile')
-                _, success = self.device.isThisTextPresent(textToVerify, screenImageString, isRE=isRE,
-                                                           maximumAcceptablePercentageDistance=maximumAcceptablePercentageDistance)
+                _, success = self.device.isThisTextPresent(
+                     textToVerify, screenImageString, isRE=isRE,
+                     maximumAcceptablePercentageDistance=maximumAcceptablePercentageDistance)
                 if success == constants.SUB_EVENT_PASSED:
                     globals_.traceLogger.debug("Found text.")
                     return
@@ -739,7 +747,8 @@ class UserDevice(object):
                             globals_.traceLogger.debug("User stopped test.")
                             return
                     else:
-                        globals_.traceLogger.debug("Failed to verify the text. Drag search not permitted by configuration.")
+                        message = "Failed to verify the text. Drag search not permitted by configuration."
+                        globals_.traceLogger.debug(message)
                         okprint("failed: " + callRepr())
                         raise EventFailedException()
             okprint("failed: " + callRepr())
@@ -752,27 +761,6 @@ class UserDevice(object):
         if userWantsToStop:
             return
         self.previousInputType = constants.WAIT
-
-
-#         dprint('UserDevice.tap 1, SN', self.device.serialNo)
-#         screenImageString, imageFilename = self.replayProcess._getLatestImageStringFromFile(self.device.serialNo, self.device.chinBarImageString)
-#         dprint('UserDevice.tap 2')
-#         maxLoc, success = utils.tapTargetInImageFile(self.device, screenImageString, targetImagePath, characters=characters)
-#         dprint('UserDevice.tap 3')
-#         userWantsToStop = self.replayProcess._getControlMessages()
-#         dprint('UserDevice.tap 4')
-#         if userWantsToStop:
-#             return
-
-#         if success == constants.SUB_EVENT_PASSED:
-#             dprint('UserDevice.tap 5')
-#             # inputEvent.status = constants.EVENT_PASSED
-#             x = maxLoc[0]
-#             y = maxLoc[1]
-
-#             self.device.tap(x, y) 
-# #            self.replayProcess.recorder.savePlayClick(self.replayProcess.testFilePath, self.replayProcess.playName, self.device.serialNo,
-# #                                                      inputEvent.inputType, x, y, "", True)
 
 
 class EventTimeout(Exception):

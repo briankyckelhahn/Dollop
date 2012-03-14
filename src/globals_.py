@@ -31,7 +31,7 @@ import constants
 
 
 moveLevel = logging.CRITICAL
-traceLevel = logging.CRITICAL
+traceLevel = logging.WARNING
 storageLevel = logging.CRITICAL
 
 #formatter = logging.Formatter("%(asctime)s:%(name)s: %(message)s")
@@ -155,7 +155,9 @@ def dprint(*args):
 
 def dprintParent():
     if constants.PRINT_DPRINT:
-        sys.stdout.write("Current routine: " + inspect.getframeinfo(sys._getframe().f_back).function + "\nParent of current routine: " + inspect.getframeinfo(sys._getframe().f_back.f_back).function + "\n")
+        message = "Current routine: " + inspect.getframeinfo(sys._getframe().f_back).function
+        message += "\nParent of current routine: " + inspect.getframeinfo(sys._getframe().f_back.f_back).function + "\n"
+        sys.stdout.write(message)
         sys.stdout.flush()
 
 
