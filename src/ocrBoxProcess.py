@@ -111,7 +111,8 @@ class OCRBoxProcess(utils.Process):
 
             # XXX we don't need to save all of the screen text, just the target text.
             (width, height, chinBarHeight, chinBarImageString, orientation) = deviceData[serialNo]
-            text, success = utils.getOCRText(self.userDocumentsPath, lcdImage, width, height - chinBarHeight, serialNo, box=True, lines=False)
+            text, success = utils.getOCRText(self.userDocumentsPath, lcdImage, width, height - chinBarHeight, 
+                                             serialNo, box=True, lines=False)
 
             # On an all-blue image, the box text had no newlines and was just gibberish.
             lines = text.split('\n')

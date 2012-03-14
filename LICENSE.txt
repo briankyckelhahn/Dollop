@@ -1,13 +1,33 @@
-# Copyright (C) 2012 Brian Kyckelhahn
-#
-# Licensed under a Creative Commons Attribution-NoDerivs 3.0 Unported 
-# License (the "License"); you may not use this file except in compliance 
-# with the License. You may obtain a copy of the License at
-#
-#      http://creativecommons.org/licenses/by-nd/3.0/
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
+Copyright (C) 2012 Brian Kyckelhahn
+
+This project was created and is maintained by <a
+href="http://briankyckelhahn.com">Brian Kyckelhahn</a>, an independent
+mobile app developer in Austin, Texas. You are welcome to contribute
+to it, and you will be acknowledged in the contributors file for doing
+so, but you surrender your copyright to Brian when you make
+contributions.
+
+This project is licensed under a Creative Commons Attribution-NoDerivs
+3.0 Unported license. That means that you cannot distribute changes
+you make to this project. You are also prohibited from distributing
+the binaries, bytecodes, and other derivatives of code that has been
+changed. However, if you make changes to this project in the course of
+working at a company and want to distribute those changes to your
+co-workers at that company so that they can use those changes in the
+course of their work at that company, Brian has no intention of
+sicking lawyers on you for doing so.
+
+These files and the binaries, bytecodes, and other derivatives
+obtained by compiling, interpreting, or otherwise translating them for
+use by a machine are licensed under a Creative Commons
+Attribution-NoDerivs 3.0 Unported License (the "License"); you may not
+use these files and derivatives except in compliance with the
+License. You may obtain a copy of the License at
+
+     http://creativecommons.org/licenses/by-nd/3.0/
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.

@@ -15,15 +15,6 @@
 # limitations under the License.
 
 
-
-# Session - A test, essentially, though not called a test because it 
-# could be used for setup or other things. Multiple devices can be 
-# exercised during a session, though that is not supported
-# yet. Multiple device support is only provided to support sessions in 
-# which those devices need to interact with one another. It's not 
-# intended for just running tests on a bunch of devices at the same time.
-
-
 import binascii
 import ConfigParser
 import copy
@@ -75,14 +66,10 @@ import recorder
 import utils
 
 
-#import screenshot
-#import vnc
-
+# XXX Not working when CTRL C is pressed.
 #def abortHandler(foo, bar):
 #    app.recorder.storage.cur.commit()
 #    app.recorder.storage.conn.close()
-
-# XXX Not working when CTRL C is pressed.
 #signal.signal(signal.SIGABRT, abortHandler)
 #signal.signal(signal.SIGINT, abortHandler)
 #signal.signal(signal.SIGTERM, abortHandler)
@@ -103,9 +90,7 @@ ABORT_REQUESTED, PAUSE_REQUESTED, RESUME_PLAY_REQUESTED = range(3)
 # shared between processes through inheritance". See "Ensure that all arguments to Process.__init__() are picklable."
 # in http://docs.python.org/library/multiprocessing.html and "Making q global works...:" in
 # http://stackoverflow.com/questions/3217002/how-do-you-pass-a-queue-reference-to-a-function-managed-by-pool-map-async.
-#EVENTS_BOX_QUEUE = multiprocessing.Queue()
-#OCR_BOX_PROCESS_QUEUE = multiprocessing.Queue()
-#REPLAY_CONTROL_QUEUE = multiprocessing.Queue()
+
 IMAGE_ARRAY = None
 
 
@@ -318,6 +303,13 @@ class IndividualTestManager(object):
         dprint('after identifyProperties')
         return success
         
+        # Session - A test, essentially, though not called a test because it 
+        # could be used for setup or other things. Multiple devices can be 
+        # exercised during a session, though that is not supported
+        # yet. Multiple device support is only provided to support sessions in 
+        # which those devices need to interact with one another. It's not 
+        # intended for just running tests on a bunch of devices at the same time.
+
         # When the recording of a session is finished, OCRBoxProcess for
         # that session is begun.
         # When a user requests that a session be loaded, all OCRBoxProcesses
@@ -384,7 +376,8 @@ class IndividualTestManager(object):
         self.currentTestIndex = 0
         self.inputEvents = [[]]
         testName = os.path.basename(testFilePath).rsplit('.', 1)[0]
-        self.populateInputEvents(0, os.path.join(globals_.getUserDocumentsPath(), constants.APP_DIR, 'tests', testName)) # = [copy.copy([]) for _ in range(len(testFilePaths))]
+        self.populateInputEvents(0, 
+                                 os.path.join(globals_.getUserDocumentsPath(), constants.APP_DIR, 'tests', testName))
 
 
     def addTest(self, testFilePath):
@@ -393,7 +386,7 @@ class IndividualTestManager(object):
         self.inputEvents.append([])
         testName = os.path.basename(testFilePath).rsplit('.', 1)[0]
         self.populateInputEvents(len(self.testFilePaths) - 1, 
-                                 os.path.join(globals_.getUserDocumentsPath(), constants.APP_DIR, testName)) # = [copy.copy([]) for _ in range(len(testFilePaths))]
+                                 os.path.join(globals_.getUserDocumentsPath(), constants.APP_DIR, testName))
 
 
     def resetTests(self):
@@ -423,7 +416,8 @@ class IndividualTestManager(object):
         if self.recorder.isSessionPackaged(self.testFilePaths[testIndex]):
             self.inputEvents[testIndex] = self._getInputEventsForSession(self.testFilePaths[testIndex])
         else:
-            self.appFrame.displayMessageInStatusBar("Processing and loading new test. This may take a while. Please wait.")
+            self.appFrame.displayMessageInStatusBar(
+                "Processing and loading new test. This may take a while. Please wait.")
             deviceData = self.recorder.getDevicesOfSession(self.testFilePaths[testIndex])
             dd = {}
             for serialNo, width, lcdHeight, maxADBCommandLength, chinBarHeight, chinBarImageString, orientation in deviceData:
@@ -518,15 +512,19 @@ class IndividualTestManager(object):
     def getNewEventsButtonComponents(self, testIndex):
         buttonList = []
         for number, inputEvent in enumerate(self.inputEvents[testIndex]):
-            globals_.traceLogger.debug("getNewEventsButtonComponents(): inputEvent number: " + str(number) + ", type: " + str(inputEvent.inputType))
+            globals_.traceLogger.debug("getNewEventsButtonComponents(): inputEvent number: " + str(number) + 
+                                       ", type: " + str(inputEvent.inputType))
 
             if inputEvent.targetImageString:
                 # Every line in this 'if block' executes quickly. I printed time.time()
                 # at each line and did not see a change in the value reported over the
                 # entire course of the 'if' block.
-                globals_.traceLogger.debug("getNewEventsButtonComponents(), targetImageWidth: " + str(inputEvent.targetImageWidth))
-                globals_.traceLogger.debug("getNewEventsButtonComponents(), targetImageHeight: " + str(inputEvent.targetImageHeight))
-                globals_.traceLogger.debug("getNewEventsButtonComponents(), targetImageHeight: " + str(len(inputEvent.targetImageString)))
+                globals_.traceLogger.debug("getNewEventsButtonComponents(), targetImageWidth: " + 
+                                           str(inputEvent.targetImageWidth))
+                globals_.traceLogger.debug("getNewEventsButtonComponents(), targetImageHeight: " + 
+                                           str(inputEvent.targetImageHeight))
+                globals_.traceLogger.debug("getNewEventsButtonComponents(), targetImageHeight: " + 
+                                           str(len(inputEvent.targetImageString)))
                 try:
                     image = Image.frombuffer("RGB",
                                              (inputEvent.targetImageWidth, inputEvent.targetImageHeight),
@@ -536,8 +534,8 @@ class IndividualTestManager(object):
                                              0,
                                              1)
                 except Exception, e:
-                    dprint("ERROR !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
                     bdbg()
+                    dprint("ERROR !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
                     globals_.traceLogger.debug("getNewEventsButtonComponents(), Exception: " + str(e))
                 # XXX this assumes the image is originally square
                 image = image.resize((30, 30))
@@ -697,8 +695,8 @@ class IndividualTestManager(object):
                                                         noGUI=self.noGUI,
                                                         latestImageFilename=device.imageFilename)
 
+        # XXX support noGUI in the future.
         if self.noGUI:
-            # XXX THIS isDone USAGE IS BROKEN!!!!! THERE IS NO MORE isDone!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
             while not self.replayThread.isDone:
                 time.sleep(1)
             activeDevice.cameraProcess.stopRequested = True
@@ -711,8 +709,9 @@ class IndividualTestManager(object):
         else:
             for number, inputEvent in enumerate(reversed(self.inputEvents[self.currentTestIndex])):
                 if inputEvent.status == constants.EVENT_FAILED:
+                    num = len(self.inputEvents[self.currentTestIndex]) - number
                     dprint("Test {name} FAILED at event #{num}".format(name=self.testFilePaths[self.currentTestIndex],
-                                                                       num=(len(self.inputEvents[self.currentTestIndex]) - number)))
+                                                                       num=num))
                     break
 
 
@@ -775,8 +774,6 @@ class IndividualTestManager(object):
                            activeDevice.chinBarHeight, activeDevice.chinBarImageString,
                            activeDevice.orientation)]
             self.sessionID = self.recorder.startSession(deviceData, self.recordingTestAtPath)
-            #activeDevice.setTestName(self.recordingTestAtPath)
-#            dprint("startSession, startingRecord")
             activeDevice.startingRecord(testName)
 
             self.playStatus = constants.PLAY_STATUS_RECORDING
@@ -789,7 +786,7 @@ class IndividualTestManager(object):
             device.setImageFilename(self.getNewImageFilename(expectedPrefix, 
                                                              currentImageFilename, 
                                                              activeDevice.serialNo))
-#            dprint("startSession, copying", currentImageFilename, "to", device.imageFilename)
+
             try:
                 shutil.copy(currentImageFilename, device.imageFilename)
             except:
@@ -845,7 +842,8 @@ class IndividualTestManager(object):
             if imageFilename.startswith('pause'):
                 newImageFilename = expectedPrefix + imageFilename[5:]
             else:
-                newImageFilename = expectedPrefix + '.' + str(self.currentTestIndex) + '.' + testName + imageFilename[imageFilename.index('.'):]
+                newImageFilename = (expectedPrefix + '.' + str(self.currentTestIndex) + '.' + testName + 
+                                    imageFilename[imageFilename.index('.'):])
             dprint("2 newImageFilename:", newImageFilename)
         elif expectedPrefix == 'explore':
             if imageFilename.startswith("play"):
@@ -914,7 +912,6 @@ class IndividualTestManager(object):
 
     def killAllOCRBoxProcesses(self):
         # Kill all running sessions.
-#        dprint("killAllOCRBoxProcesses called")
         messages = []
         while True:
             try:
@@ -1079,7 +1076,8 @@ class AppFrame(wx.Frame):
             # Player is paused; user wants to resume.
             self.stopBtn.Enable()
             self.mgr.resumeReplay()
-        elif self.mgr.playStatus in (constants.PLAY_STATUS_READY_TO_PLAY, constants.PLAY_STATUS_FINISHED, constants.PLAY_STATUS_STOPPED):
+        elif self.mgr.playStatus in (constants.PLAY_STATUS_READY_TO_PLAY, constants.PLAY_STATUS_FINISHED, 
+                                     constants.PLAY_STATUS_STOPPED):
             self.recordBtn.Disable()
             if self.mgr.playStatus in (constants.PLAY_STATUS_FINISHED, constants.PLAY_STATUS_STOPPED):
                 # Refresh the events so that their icons don't have checks and Xes on them.
@@ -1103,34 +1101,9 @@ class AppFrame(wx.Frame):
 
             # Start playing again from the top.
             self.mgr.startSuitePlayRecording()
-            # if self.playStatus in (constants.PLAY_STATUS_FINISHED, constants.PLAY_STATUS_STOPPED):
-            #     self.playAndRecordSizer.Remove(self.replayEventsBox)
-            #     self.replayEventsBox = plateButton.TestPanel(self.playAndRecordPanel, self, utils.TestLog(), self.mgr)
-            #     self.playAndRecordSizer.Add(self.replayEventsBox, 1)
-            #     self.replayEventsBox.DoLayout(self.mgr.sessionName, self.buttonList)
-            #     self.playAndRecordSizer.Fit(self.playAndRecordPanel)
-            # else:
-            #     # Player is stopped and a session has been loaded; user wants to play.
-            #     pass
+
             time.sleep(0.05)
             self.updateGUIToState(self.mgr.playStatus)
-#            finishedSuite, finishedTest = self.testViewer.advanceViewToNextEventOrTest() # This gets the viewer state updated so that the current event is the first one in the test.
-            # if finishedSuite:
-            #     # This could happen if the user loaded a single test with no events.
-            #     self.mgr.setPlayStatus(constants.PLAY_STATUS_FINISHED)
-            #     self.updateGUIToState(constants.PLAY_STATUS_FINISHED)
-            #     #self.recordBtn.Enable()
-            #     self.SetTitle("Finished playing suite - " + constants.APPLICATION_NAME_REGULAR_CASE)
-            #     #self.playPauseBtn.Enable()
-            #     #self.playPauseBtn.SetToggle(False)
-            #     #self.stopBtn.Disable()
-            #     self.mgr.finishingPlayback()
-            #     self.recorder.finishTestOrPlayStorage(self.playName, 'play')
-            # elif finishedTest:
-            #     # This could happen if the user loaded two or more tests, the first of which
-            #     # had no events, among other scenarios.
-            #     self.mgr.playNextTest()
-            # else:
             testRepr = self.mgr.getCurrentTestRepr()
             self.mgr.startReplay()
             self.SetTitle("Playing " + testRepr + " - " + constants.APPLICATION_NAME_REGULAR_CASE)            
@@ -1141,16 +1114,17 @@ class AppFrame(wx.Frame):
 
     def OnStopReplay(self, _):
         if self.mgr.playStatus in (constants.PLAY_STATUS_PLAYING, constants.PLAY_STATUS_PAUSED):
-            # A status msg saying "stopping process..." or sth could be posted to status bar as in LongRunningTasks wxpython page
+            # A status msg saying "stopping process..." or sth could be posted to status bar as in LongRunningTasks
+            # wxpython page.
             self.updateGUIToState(constants.PLAY_STATUS_STOPPED)
             testRepr = self.mgr.getCurrentTestRepr()
             self.mgr.stopReplay()
             self.SetTitle("Stopped playing " + testRepr + " - " + constants.APPLICATION_NAME_REGULAR_CASE)
-            #self.replayMessageTimer.Start(1000, oneShot=False)
 
 
     def updateGUIToState(self, state):
-        if state in (constants.PLAY_STATUS_READY_TO_PLAY, constants.PLAY_STATUS_STOPPED, constants.PLAY_STATUS_FINISHED):
+        if state in (constants.PLAY_STATUS_READY_TO_PLAY, constants.PLAY_STATUS_STOPPED, 
+                     constants.PLAY_STATUS_FINISHED):
             for control in [self.recordingToolsBox, self.waitTextBox, self.enterWaitBtn, self.verifyTextLabel,
                             self.verifyTextBox, self.enterTextBtn, self.stopBtn]:
                 control.Disable()            
@@ -1473,7 +1447,8 @@ class AppFrame(wx.Frame):
                 # here but don't wait for it to die.
                 prefix, unflattenedPNGPath565, flattenedPNGPath565 = utils.getPNGNames(self.mgr, device.serialNo)
                 rgb565Times.append(time.time())
-                subprocess.Popen((config.adbPath + device.dt.serialNoString + 'pull /dev/graphics/fb0 ' + pulledBufferName).split(),
+                subprocess.Popen((config.adbPath + device.dt.serialNoString + 'pull /dev/graphics/fb0 ' + 
+                                  pulledBufferName).split(),
                                  stdout=subprocess.PIPE, stderr=subprocess.PIPE)
             
             return (chosenMethods[0], acceptedMethods, [x[0] for x in imagePaths], acceptedWidth, 
@@ -1501,112 +1476,28 @@ class AppFrame(wx.Frame):
 
 
     def resetTest(self, sessionName):
-        #
-
-        # Support the user loading the same test multiple times
-        # in a suite.
-
-        # self.playAndRecordSizer.Remove(self.replayEventsBox)
-        # for _ in range(len(self.replayEventsBox.buttons)):
-        #     self.replayEventsBox.buttons[0].Destroy()
-        #     del self.replayEventsBox.buttons[0]
-        # self.replayEventsBox.Destroy()
-        # This is done so that populateInputEvents is working on the
-        # right test.
-
-        # self.buttonList = self.mgr.getNewEventsButtonComponents(sessionName)
-        # self.Layout()
-        # self.replayEventsBox = plateButton.TestPanel(self.playAndRecordPanel, self, utils.TestLog(), self.mgr)
-        # self.playAndRecordSizer.Add(self.replayEventsBox, 1)        
-        # self.replayEventsBox.DoLayout(sessionName, self.buttonList)
-        #self.playAndRecordSizer.Fit(self.playAndRecordPanel)
-
         self.mgr.setPlayStatus(constants.PLAY_STATUS_READY_TO_PLAY)
         self.updateGUIToState(constants.PLAY_STATUS_READY_TO_PLAY)
-
-        #TODO if len(self.buttonList) == 0:
-        #    self.playPauseBtn.Disable()
-        # The line of the StaticBox for the Play & Record will be
-        # partially missing until self.Layout() is called.
-#        self.testViewer = TestViewer(self, "Test Suite", self.mgr, [sessionName])
-#        self.addTestMenuItem.Enable(True)
         self.Layout()
 
 
     def resetTests(self, testFilePaths):
-#        self.testViewer.close()
-#        self.testViewer = TestViewer(self, "Test Suite", self.mgr, testFilePaths)
-#        self.testViewer.Show()
-#        self.testViewer.Raise()
-#        self.addTestMenuItem.Enable(True)
         self.Layout()
 
 
     def clearSuiteAndLoadTest(self, testFilePath):
-        #
-
-        # self.playAndRecordSizer.Remove(self.replayEventsBox)
-        # for _ in range(len(self.replayEventsBox.buttons)):
-        #     self.replayEventsBox.buttons[0].Destroy()
-        #     del self.replayEventsBox.buttons[0]
-        # self.replayEventsBox.Destroy()
-        # This is done so that populateInputEvents is working on the
-        # right test.
-
-        # self.buttonList = self.mgr.getNewEventsButtonComponents(sessionName)
-        # self.Layout()
-        # self.replayEventsBox = plateButton.TestPanel(self.playAndRecordPanel, self, utils.TestLog(), self.mgr)
-        # self.playAndRecordSizer.Add(self.replayEventsBox, 1)        
-        # self.replayEventsBox.DoLayout(sessionName, self.buttonList)
-        #self.playAndRecordSizer.Fit(self.playAndRecordPanel)
-
         for control in [self.recordingToolsBox, self.waitTextBox, self.enterWaitBtn, self.verifyTextLabel,
                         self.verifyTextBox, self.enterTextBtn]:
             control.Disable()            
         for control in [self.playPauseBtn]: #self.replayEventsBox, self.playPauseBtn]:
             control.Enable()
-        #TODO if len(self.buttonList) == 0:
-        #    self.playPauseBtn.Disable()
-        # The line of the StaticBox for the Play & Record will be
-        # partially missing until self.Layout() is called.
-#        self.testViewer = TestViewer(self, "Test Suite", self.mgr, [testFilePath])
         self.addTestMenuItem.Enable(True)
         self.Layout()
         self.mgr.setPlayStatus(constants.PLAY_STATUS_READY_TO_PLAY)
 
 
-    # def emptyEventsBox(self):
-    #     self.playAndRecordSizer.Remove(self.replayEventsBox)
-    #     for _ in range(len(self.replayEventsBox.buttons)):
-    #         self.replayEventsBox.buttons[0].Destroy()
-    #         del self.replayEventsBox.buttons[0]
-    #     self.replayEventsBox.Destroy()
-    #     self.buttonList = []
-    #     self.Layout()
-    #     self.replayEventsBox = plateButton.TestPanel(self.playAndRecordPanel, self, utils.TestLog(), self.mgr)
-    #     self.playAndRecordSizer.Add(self.replayEventsBox, 1)        
-    #     self.replayEventsBox.DoLayout("", self.buttonList)
-    #     self.playAndRecordSizer.Fit(self.playAndRecordPanel)
-    #     # The line of the StaticBox for the Play & Record will be
-    #     # partially missing until self.Layout() is called.
-    #     self.Layout()
-
-
     def onDeleteSessions(self, event):
         pass
-        # tests = self.recorder.getSessionNames()
-        # dlg = wx.MultiChoiceDialog(self, 'Delete Tests', 'Tests',
-        #                            tests,
-        #                            wx.CHOICEDLG_STYLE)
-
-        # if dlg.ShowModal() == wx.ID_OK:
-        #     choices = dlg.GetSelections()
-        # else:
-        #     # User decided not to load a session.
-        #     return
-        # dlg.Destroy()
-
-        #self.recorder.deleteSessions(choices)
 
 
     def onEditConfiguration(self, event):
@@ -1655,13 +1546,6 @@ class AppFrame(wx.Frame):
             if serialNo == self.mgr.devices[self.mgr.activeDeviceIndex].serialNo:
                 device = self.mgr.devices[self.mgr.activeDeviceIndex]
                 device.cameraProcess.changeScreenshotMethod(method)
-#                oldCameraProcess = device.cameraProcess
-#                oldCameraProcess.stopRequested = True
-#                device.cameraProcess = ScreenshotProcess(device.mgr, device, device.window, device.mgr.sessionID, 
-#                                                         device.vncPort, device.serialNo, device.width, 
-#                                                         device.height - device.chinBarHeight, device.chinBarHeight, 
-#                                                         device.chinBarImageString, method,
-#                                                         device.mgr.monkeyrunnerPath)
         dlg.Destroy()
         self.playAndRecordSizer.Fit(self.playAndRecordPanel)
         self.Layout()
@@ -1764,33 +1648,6 @@ wxPython"""
         #                     targetImageUpdate.imageString)
 
 
-    # def _setTargetImage(self, width, height, imageString):
-    #     clientDC = wx.ClientDC(self.targetImageWindow)
-    #     self.targetImageBuffer = wx.EmptyBitmap(width, height)
-    #     dc = wx.BufferedDC(clientDC, self.targetImageBuffer)
-    #     #dc = wx.BufferedDC(clientDC, wx.Size(targetImageUpdate.width,
-    #     #                                     targetImageUpdate.height))
-    #     dc.BeginDrawing()
-    #     targetImage = wx.EmptyImage(width, height)
-    #     targetImage.SetData(imageString)
-    #     dc.DrawBitmap(wx.BitmapFromImage(targetImage), 0, 0)
-    #     dc.EndDrawing()
-
-
-    # def OnReplayDone(self, replayFinishedUpdate):
-    #     # Replay has finished or been cancelled.
-    #     globals_.traceLogger.debug("OnReplayDone")
-    #     self.playPauseBtn.SetToggle(False)
-    #     self.recordBtn.Enable()
-    #     self.OnPaint(None)
-    #     if self.showADBDeviceNotFoundError:
-    #         self.showADBDeviceNotFoundError = False
-    #         self.mgr.device.window.displayADBDeviceNotFoundError()
-        
-    #     for inputEvent in self.mgr.inputEvents:
-    #         traceLogger.debug("inputEvent.status: {st}".format(st=inputEvent.status))
-
-
     def OnNewSession(self, _):
         self.OnRecordSession(None)
         
@@ -1816,7 +1673,6 @@ wxPython"""
             # test script with the FileDialog above, he doesn't need the test (aka 'session'), 
             # so delete it from the DB.
             
-            # TODO This overwrites the test file if it exists. Prompt the user about the existing file, or does FileDialog handle that for me?
             if not sessionPath:
                 # It doesn't appear that the wxPython user can prevent the record button from appearing
                 # depressed when it's first pressed.
@@ -1833,7 +1689,8 @@ wxPython"""
                         buttonStyle = wx.OK
                         dialogStyle = wx.ICON_ERROR
                         dlg = wx.MessageDialog(self,
-                                               "An attempt to remove the earlier test directory path at " + testFolderPath + " failed.",
+                                               ("An attempt to remove the earlier test directory path at " + 
+                                                testFolderPath + " failed."),
                                                "Error removing directory",
                                                buttonStyle | dialogStyle)
                         dlg.ShowModal()
@@ -1861,7 +1718,9 @@ wxPython"""
 
                     #write the resized image to file
                     chinBarImageName = constants.CHIN_BAR_IMAGE_TEMPLATE.format(ser=device.serialNo)
-                    chinBarImagePath = os.path.join(globals_.getUserDocumentsPath(), constants.APP_DIR, chinBarImageName)
+                    chinBarImagePath = os.path.join(globals_.getUserDocumentsPath(), 
+                                                    constants.APP_DIR, 
+                                                    chinBarImageName)
                     try:
                         cv.SaveImage(chinBar, chinBarImagePath)
                     except:
@@ -1883,24 +1742,6 @@ wxPython"""
 
 
         def record(self, testName):
-            # We're recording; don't show events.
-            # self.emptyEventsBox()
-#            if self.testViewer:
-#                self.testViewer.close()
-            # self.playAndRecordSizer.Remove(self.replayEventsBox)
-            # self.replayEventsBox = plateButton.TestPanel(self.playAndRecordPanel, self, utils.TestLog(), self.mgr)
-            # self.playAndRecordSizer.Add(self.replayEventsBox, 1)        
-
-            # self.replayEventsBox.DoLayout("", [])
-            
-            # # This may be what causes the scroll bars to appear.
-            # # On Windows, this causes a grey background to appear (slightly
-            # # offset) from the device screen.
-            # self.playAndRecordSizer.Fit(self.playAndRecordPanel)
-            # # On Windows, this gets rid of the grey background caused by
-            # # the previous command, though it takes a second or two to
-            # # have its effect.
-            # self.Layout()
             for control in [self.recordingToolsBox, self.waitTextBox, self.enterWaitBtn, self.verifyTextLabel,
                             self.verifyTextBox, self.enterTextBtn]:
                 control.Enable()
@@ -1917,7 +1758,6 @@ wxPython"""
             globals_.traceLogger.debug("Stopping recording.")
             testPath = self.mgr.getRecordingTestPath()
             self.mgr.stopRecording()
-            #self.sessionsChoiceBox.AppendAndEnsureVisible(self.recordingTestAtPath)
             self.mgr.startOCRBoxProcess(testPath)
 
             for control in [self.recordingToolsBox, self.waitTextBox, self.enterWaitBtn, self.verifyTextLabel,
@@ -2014,14 +1854,6 @@ wxPython"""
         self.SetStatusText("")
 
 
-#    def onUnhideDeviceWindowTimer(self, event):
-#        dprint('onUnhideDeviceWindowTimer')
-#        self.devicePanels[self.hidingDeviceIndex].deviceWindow.unhideFromMouseClicks()
-
-
-# EventsBoxQueue now is a testQueue; there are no events that can be tracked by the tool.
-
-
     def onEventsBoxTimer(self, event):
         if self.mgr.playStatus not in (constants.PLAY_STATUS_PLAYING, constants.PLAY_STATUS_PAUSED):
             # The user may have stopped the test, while the replayProcess
@@ -2044,32 +1876,10 @@ wxPython"""
                 # These are the only statuses being returned now, actually.
                 self.mgr.setPlayStatus(constants.PLAY_STATUS_FINISHED)
                 self.updateGUIToState(constants.PLAY_STATUS_FINISHED)
-                #self.recordBtn.Enable()
-                self.SetTitle("Finished playing test - " + constants.APPLICATION_NAME_REGULAR_CASE) # self.SetTitle("Finished playing suite - " + constants.APPLICATION_NAME_REGULAR_CASE)
-                #self.playPauseBtn.Enable()
-                #self.playPauseBtn.SetToggle(False)
-                #self.stopBtn.Disable()
+                self.SetTitle("Finished playing test - " + constants.APPLICATION_NAME_REGULAR_CASE)
                 self.mgr.finishingPlayback()
                 self.mgr.recorder.finishTestOrPlayStorage(self.mgr.playName, 'play')
                 
-
-            # # The TestViewer may have just been closed.
-            # if self.testViewer:
-            #     finishedSuite, finishedTest = self.testViewer.advanceViewToNextEventOrTest(status)
-            #     if finishedSuite:
-            #         self.mgr.setPlayStatus(constants.PLAY_STATUS_FINISHED)
-            #         self.updateGUIToState(constants.PLAY_STATUS_FINISHED)
-            #         #self.recordBtn.Enable()
-            #         self.SetTitle("Finished playing suite - " + constants.APPLICATION_NAME_REGULAR_CASE)
-            #         #self.playPauseBtn.Enable()
-            #         #self.playPauseBtn.SetToggle(False)
-            #         #self.stopBtn.Disable()
-            #         self.mgr.finishingPlayback()
-            #         self.mgr.recorder.finishTestOrPlayStorage(self.mgr.playName, 'play')
-
-            #     elif finishedTest:
-            #         self.mgr.playNextTest()
-
 
     def onAfterGUIStartTimer(self, event):
         self.mgr.startOCRBoxProcess()
@@ -2124,7 +1934,6 @@ wxPython"""
             self.mgr.recorder.maybeUpdateDeviceInfo(activeDevice.serialNo,
                                                     activeDevice.dt.maxADBCommandLength)
             self.devicePanels[self.mgr.activeDeviceIndex].deviceWindow.charTimer.Stop()
-            #self.DestroyChildren()
             os.chdir(self.originalWorkingDir)
             try:
                 # I tried windll.kernel32.TerminateProcess() and it only worked when the
@@ -2146,7 +1955,6 @@ class ScreenshotMethodChooser(wx.Dialog):
         self.swapped = False
 
         wx.Dialog.__init__(self, parent, -1, "Screenshot Method Acceptance")
-#                           size=(300, 400))
 
         sizer = wx.BoxSizer(wx.VERTICAL)
         sizer.Add((10, 10))
@@ -2228,7 +2036,7 @@ class ImagePanel(wx.Panel):
             # bmp = wx.BitmapFromImage(image)
             # wx.StaticBitmap(self, -1, bmp, (5, 5))
             try:
-                _image = cv.LoadImage(imagePath, cv.CV_LOAD_IMAGE_UNCHANGED)#cv.CV_LOAD_IMAGE_COLOR)
+                _image = cv.LoadImage(imagePath, cv.CV_LOAD_IMAGE_UNCHANGED)
                 #_image = Image.open(imagePath)
                 #imageString = _image.tostring()
             except Exception, e:
@@ -2280,20 +2088,16 @@ class PlateButtonNoLeftUp(platebtn.PlateButton):
 
 class AbstractTestDialog(sc.SizedDialog):
     def RightClickCb(self, event):
-        ### Launcher creates wxMenu. ###
         menu = wx.Menu()
         for (id,title) in self.menu_title_by_id.items():
-            ### Launcher packs menu with Append. ###
-            menu.Append( id, title )
-            ### Launcher registers menu handlers with EVT_MENU, on the menu. ###
-            wx.EVT_MENU( menu, id, self.MenuSelectionCb )
+            menu.Append(id, title)
+            wx.EVT_MENU(menu, id, self.MenuSelectionCb)
 
-        ### Launcher displays menu with call to PopupMenu, invoked on the source component, passing event's GetPoint. ###
-        self.PopupMenu( menu, event.GetPoint() )
+        self.PopupMenu(menu, event.GetPoint())
         menu.Destroy() # destroy to avoid mem leak
 
 
-    def MenuSelectionCb( self, event ):
+    def MenuSelectionCb(self, event):
         selectionName = self.menu_title_by_id[event.Id]
         if selectionName == 'Rename':
             oldSessionName = self.selectedName
@@ -2307,7 +2111,8 @@ class AbstractTestDialog(sc.SizedDialog):
                     dlg.Destroy()
                     return
                 if newSessionName in self.existingTestNames and oldSessionName != newSessionName:
-                    msg = "That name is the same as another test's name. Are you sure that you want to replace that existing test?"
+                    msg = ("That name is the same as another test's name. Are you sure that you want to replace that " +
+                           "existing test?")
                     deleteExistingTestDlg = wx.MessageDialog(None,
                                                              msg,
                                                              "Replace existing test?",
@@ -2435,27 +2240,19 @@ class LoadTestDialog(AbstractTestDialog):
         self.Bind(wx.EVT_MOTION, self.onMouseMove)
         self.Bind(wx.EVT_CLOSE, self.onClose)
 
-#        self.Bind(wx.EVT_KEY_DOWN, self.onKeyDown)
-        
         sizer = wx.BoxSizer(wx.VERTICAL)
 
         self.existingTestsCtrl = wx.ListCtrl(self, -1, style=wx.LC_REPORT, size=(100, 300))
-#        self.existingTestsCtrl.Bind(wx.EVT_KEY_DOWN, self.onKeyDown)
 
         # When this InsertColumn is commented, a Seg Fault occurs.
-        self.existingTestsCtrl.InsertColumn( 0, "Existing tests:", width=270) # 20 truncates to 2 chars, 50 to 3, 100 to 11, 300 introduces a horiz scrollbar
+        # 20 truncates to 2 chars, 50 to 3, 100 to 11, 300 introduces a horiz scrollbar
+        self.existingTestsCtrl.InsertColumn( 0, "Existing tests:", width=270) 
         for index, x in enumerate(existingTestNames):
             self.existingTestsCtrl.InsertStringItem(index, x)
 
-        ### 1. Register source's EVT_s to invoke launcher. ###
         wx.EVT_LIST_ITEM_RIGHT_CLICK(self.existingTestsCtrl, -1, self.RightClickCb )
         self.existingTestsCtrl.Bind(wx.EVT_LIST_ITEM_SELECTED, self.onItemSelected)
         self.existingTestsCtrl.Bind(wx.EVT_LIST_ITEM_ACTIVATED, self.onTestChosen)
-#        self.existingTestsCtrl.Bind(wx.EVT_COMMAND_RIGHT_CLICK, self.rightclicknow)
-        
-#        self.Bind(wx.EVT_LEFT_DOWN, self.OnLeftMouseDownInTextControl)
-#        self.Bind(wx.EVT_LEFT_DCLICK, self.OnLeftDoubleClickInTextControl)
-#        self.Bind(wx.EVT_LEFT_UP, self.onLeftMouseUpInTextControl)
 
         # Clear variables
         self.selectedName = None
@@ -2519,39 +2316,7 @@ class LoadTestDialog(AbstractTestDialog):
         dprint("LoadTestDialog.onMouseMove(), shouldPropagate:", event.ShouldPropagate())
 
 
-
-    ## def onKeyDown(self, event):
-    ##     if event.GetKeyCode() == wx.WXK_RETURN:
-    ##         self.onOK(event)
-    ##     event.Skip()
-
-
-    # def OnLeftMouseDownInTextControl(self, event):
-    #     # event.ShouldPropagate() returns False in this method.
-    #     dprint("OnLeftMouseDownInTextControl")
-    #     event.Skip()
-
-
-    # def onTestChosen(self, event):
-    #     dprint("onTestChosen")
-    #     self.selectedName = event.GetText()
-    #     self.Destroy()
-    #     return
-
-    
-    # def onItemSelected(self, event):
-    #     dprint("onItemSelected")
-    #     self.selectedName = event.GetText()
-    #     self.okButton.SetFocus()
-        
-
-    # def onOK(self, event):
-    #     if self.selectedName:
-    #         self.Destroy()
-
-
     def onKeyDown(self, event):
-#        dprint('onKeyDown')
         if event.GetKeyCode() != wx.WXK_RETURN:
             event.Skip()
             return
@@ -2561,45 +2326,23 @@ class LoadTestDialog(AbstractTestDialog):
     def onItemSelected(self, event):
         dprint('onItemSelected, shouldPropagate():', event.ShouldPropagate())
         self.selectedName = event.GetText()
-        #event.Skip()
         event.StopPropagation()
         event.StopPropagation()
         event.StopPropagation()
 
 
     def OnLeftMouseDownInTextControl(self, event):
-        ## event.ShouldPropagate() returns False in this method.
-
-#        dprint('OnLeftMouseDownInTextControl, shouldPropagate():', event.ShouldPropagate())
-#        event.StopPropagation()
-#        event.StopPropagation()
-#        event.StopPropagation()
-
-        #if not self.suggestedNameClearedAlready:
-        #    self.sessionNameCtrl.SetValue("")
-        #    self.suggestedNameClearedAlready = True
-
         # If this Skip() isn't here, onItemSelected will not be called.
         event.Skip()
         pass
             
     
     def onLeftMouseUpInTextControl(self, event):
-        ## event.ShouldPropagate() returns False in this method.
         pass
-#        dprint("onLeftMouseUpInTextControl, shouldPropagate():", event.ShouldPropagate())
-#        event.StopPropagation()
-#        event.StopPropagation()
-#        event.StopPropagation()
 
 
     def OnLeftDoubleClickInTextControl(self, event):
-        ## event.ShouldPropagate() returns False in this method.
         pass
-#        dprint('OnLeftDoubleClickInTextControl, shouldPropagate():', event.ShouldPropagate())
-#        event.StopPropagation()
-#        event.StopPropagation()
-#        event.StopPropagation()
 
 
     def onTestChosen(self, event):
@@ -2620,7 +2363,6 @@ class LoadTestDialog(AbstractTestDialog):
         event.StopPropagation()
         event.StopPropagation()
         event.StopPropagation()
-#        dprint('onOK, shouldPropagate():', event.ShouldPropagate())
         return
 
 
@@ -2656,12 +2398,11 @@ class NameTestDialog(AbstractTestDialog):
 
         sizer = wx.BoxSizer(wx.VERTICAL)
 
-        #sizer.Add(wx.StaticText(self, -1, "Existing tests:", (20,20)))
-
         self.existingTestsCtrl = wx.ListCtrl(self, -1, style=wx.LC_REPORT, size=(100, 300))
         self.existingTestsCtrl.Bind(wx.EVT_KEY_DOWN, self.onKeyDown)
         # When this InsertColumn is commented, a Seg Fault occurs.
-        self.existingTestsCtrl.InsertColumn( 0, "Existing tests:", width=270) # 20 truncates to 2 chars, 50 to 3, 100 to 11, 300 introduces a horiz scrollbar
+        # 20 truncates to 2 chars, 50 to 3, 100 to 11, 300 introduces a horiz scrollbar
+        self.existingTestsCtrl.InsertColumn( 0, "Existing tests:", width=270) 
         for index, x in enumerate(existingTestNames):
             self.existingTestsCtrl.InsertStringItem(index, x)
 
@@ -2715,16 +2456,11 @@ class NameTestDialog(AbstractTestDialog):
         # It doesn't matter which order I add them in; Apply always appears
         # to the right of Cancel.
         buttonSizer.Add(self.okButton, 0, wx.RIGHT)
-
         buttonSizer.Add((20,1), 0, wx.RIGHT)
-        
         msizer.Add(buttonSizer, 0, wx.ALIGN_RIGHT, 200)
-
         msizer.Add((100, 12), 0, wx.ALIGN_RIGHT)
-        
         self.SetSizer(msizer)
-
-        # Brian, this Fit() actually works.
+        # This Fit() does indeed work.
         msizer.Fit(self)
 
         menu_titles = ["Delete", "Rename"]
@@ -2941,8 +2677,6 @@ class ScreenshotConfigPage(wx.Panel):
         # 1, wx.EXPAND | wx.ALL, 20
         # cause the buttons to be moved close to the bottom of the dialog.
         msizer.Add(sizer, 1, wx.EXPAND|wx.ALL, 20)
-#        msizer.Add(deviceSizer, 1)#, flag=wx.ALL, border=10)
-#        msizer.Add(methodSizer, 1)#, flag=wx.ALL, border=10)
 
         # wx.StdDialogButtonSizer() causes wx.ID_CLOSE to be placed at the top left of the dialog,
         # so avoid it.
@@ -3018,7 +2752,8 @@ class KeycodesConfigPage(wx.Panel):
         mapNames = config.keycodes.keys()
         for mapName in mapNames:
             self.keycodePanels[mapName] = wx.lib.scrolledpanel.ScrolledPanel(self, -1, size=(350, 300),
-                                                                             style = wx.TAB_TRAVERSAL|wx.SUNKEN_BORDER, name=mapName)
+                                                                             style = wx.TAB_TRAVERSAL|wx.SUNKEN_BORDER, 
+                                                                             name=mapName)
             self.keycodesScancodes = {}
             self.scancodeCtrls[mapName] = {}
             keys = sorted(config.keycodes[mapName].keys())
@@ -3028,7 +2763,9 @@ class KeycodesConfigPage(wx.Panel):
                 value = config.keycodes[mapName][name]
                 #h = wx.BoxSizer(wx.HORIZONTAL)
                 keycodeLabel = wx.StaticText(self.keycodePanels[mapName], -1, name + ":")
-                self.keycodesSizers[mapName].Add(keycodeLabel, border=5, flag=wx.TOP | wx.ALIGN_BOTTOM | wx.ALIGN_RIGHT)
+                self.keycodesSizers[mapName].Add(keycodeLabel, 
+                                                 border=5, 
+                                                 flag=wx.TOP | wx.ALIGN_BOTTOM | wx.ALIGN_RIGHT)
                 ctrlID = wx.NewId()
                 ctrl = wx.TextCtrl(self.keycodePanels[mapName], ctrlID, str(value), size=(50, 27))
                 ctrl.Bind(wx.EVT_SET_FOCUS, self.onScancodeCtrlFocus)
@@ -3104,12 +2841,12 @@ class KeycodesConfigPage(wx.Panel):
         mapName = self.addKeycodeButtons[event.GetId()]
         keycode = self.newKeycodeCtrls[mapName].GetValue()
         self.newKeycodeCtrls[mapName].SetValue('')
-        self.keycodesSizers[mapName].Add(wx.StaticText(self.keycodePanels[mapName], -1, keycode + ":"), border=5, flag=wx.TOP | wx.ALIGN_BOTTOM | wx.ALIGN_RIGHT)
+        self.keycodesSizers[mapName].Add(wx.StaticText(self.keycodePanels[mapName], -1, keycode + ":"), 
+                                         border=5, flag=wx.TOP | wx.ALIGN_BOTTOM | wx.ALIGN_RIGHT)
         value = self.newScancodeCtrls[mapName].GetValue()
         self.newScancodeCtrls[mapName].SetValue('')
         ctrl = wx.TextCtrl(self.keycodePanels[mapName], -1, value, size=(50, 27))
         self.keycodesSizers[mapName].Add(ctrl, border=5, flag=wx.LEFT | wx.TOP)
-        #self.keycodesSizers[mapName].Add(h, border=sideBorder, flag=wx.LEFT | wx.RIGHT)
         self.scancodeCtrls[mapName][keycode] = ctrl
         self.scancodeCtrlIDToMapNameKeycode[ctrl.Id] = (mapName, keycode)
         self.Layout()
@@ -3217,15 +2954,6 @@ class DeviceGUIAssembly(wx.Panel):
         #self.devicePanel.SetAutoLayout(True)
         self.devicePanelSizer.Fit(self)
 
-        # These were never called.
-        #self.Bind(wx.EVT_KILL_FOCUS, self.onKillFocus)
-        #self.Bind(wx.EVT_SET_FOCUS, self.onSetFocus)
-
-        # self.Bind(wx.EVT_LEFT_DOWN, self.OnLeftMouseDown)
-        # self.Bind(wx.EVT_LEFT_UP, self.OnLeftMouseUp)
-        # self.Bind(wx.EVT_LEFT_DCLICK, self.OnLeftDClick)
-        # self.Bind(wx.EVT_MOTION, self.OnMouseMove)
-
 
     def OnLeftMouseDown(self, event):
         dprint('DeviceGUIAssembly: onleftmousedown')
@@ -3305,7 +3033,8 @@ class Device(object):
                                               device.yScale * constants.DRAG_STEP_SIZE_IN_PIXELS)
         # Error values returned are ignored for now. Is there any chance they'd be not-okay? XXX
         if downText and upText:
-            eDown, eUp, eRepeater, ePostfix = device.dt.setText(downText, upText, repeaterText, repeaterPostfixText, downUpText)
+            eDown, eUp, eRepeater, ePostfix = device.dt.setText(downText, upText, repeaterText, repeaterPostfixText, 
+                                                                downUpText)
 
         device.sentFirstDown = False
         device.sentFirstUp = False
@@ -3362,7 +3091,8 @@ class Device(object):
             self.width = 800; lcdHeight = 480; dumpsysWindowOutput = ""
 
         if not success:
-            msg = "An attempt to communicate with the device has failed. This is one procedure that often re-establishes communication with Android devices:"
+            msg = "An attempt to communicate with the device has failed. This is one procedure that often "
+            msg += "re-establishes communication with Android devices:"
             msg += "\n\n"
             msg += constants.RECONNECT_INSTRUCTIONS
             buttonStyle = wx.OK
@@ -3413,7 +3143,8 @@ class Device(object):
             self.yScale = yScale
             self.yIntercept = yIntercept
             # todo prevent infinite looping when no more reductions can be made
-            eDown, eUp, eRepeater, ePostfix = self.dt.setText(downText, upText, downRepeaterText, repeaterPostfixText, downUpText)
+            eDown, eUp, eRepeater, ePostfix = self.dt.setText(downText, upText, downRepeaterText, repeaterPostfixText, 
+                                                              downUpText)
 
             # This is a guess; it returns '2.2' when run against my Droid 2:
             androidVersion = self.dt.sendCommand("shell getprop ro.build.version.release")
@@ -3450,7 +3181,7 @@ class Device(object):
             time.sleep(5)
             controlQueue.put('stop')
             try:
-                geOutput, error = resultsQueue.get(block=True, timeout=10) #todo change this back to a small timeout, like 10 as it was
+                geOutput, error = resultsQueue.get(block=True, timeout=10) 
             except Exception, e:
                 return False
             if not geOutput:
@@ -3467,7 +3198,9 @@ class Device(object):
             if constants.STREAK_DEBUG:
                 potentialScreenEventPaths = ['/dev/input/event2']
 
-            msg = "With your help, the tool will determine how to send touch events to your phone or tablet. Start by setting your device down on a flat surface with the USB cable still connected. After you've set it down, don't touch it."
+            msg = "With your help, the tool will determine how to send touch events to your phone or tablet. Start "
+            msg += "by setting your device down on a flat surface with the USB cable still connected. After you've "
+            msg += "set it down, don't touch it."
             msg += "\n\n"
             buttonStyle = wx.OK
             dlg = wx.MessageDialog(None,
@@ -3482,7 +3215,6 @@ class Device(object):
             touchEventIdentificationIterations = 1
             # This is True when the code realizes that touch event identification can't be done.
             touchEventIdentificationImpossible = False
-            # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
             while (not touchEventIdentificationSuccess and 
                    touchEventIdentificationIterations < 3 and 
                    not touchEventIdentificationImpossible):
@@ -3500,9 +3232,13 @@ class Device(object):
                 while iterations < 2 and not upperRightEventPathData:
                     title = "Tap the Upper Right Corner"
                     if iterations > 0:
-                        msg = "Something didn't go right. Please try again. Tap the upper right corner of your device's touchscreen with your finger, just inside the screen boundaries. Press OK when you're done."
+                        msg = "Something didn't go right. Please try again. Tap the upper right corner of your "
+                        msg += "device's touchscreen with your finger, just inside the screen boundaries. Press "
+                        msg += "OK when you're done."
                     else:
-                        msg = "Now, tap the upper right corner of your device's touchscreen with your finger, just inside the screen boundaries. Don't tap the touchscreen anywhere else or press anything else on the device. Press OK when you're done."
+                        msg = "Now, tap the upper right corner of your device's touchscreen with your finger, just "
+                        msg += "inside the screen boundaries. Don't tap the touchscreen anywhere else or press "
+                        msg += "anything else on the device. Press OK when you're done."
                     upperRightEventPathData = utils.getEventPathData(self, potentialScreenEventPaths, 
                                                                      lcdHeight, title, msg)
                     iterations += 1
@@ -3578,23 +3314,6 @@ class Device(object):
                     #while not touchEventIdentificationImpossible:
                     eDown, eUp, eRepeater, ePostfix = self.dt.setText(downText, upText, downRepeaterText, 
                                                                       postfixText, downUpText)
-                        # if constants.ERROR_ADB_COMMAND_LENGTH in eUp:
-                        #     # I think our only choice here may be to use monkey, b/c 
-                        #     # up is just one sequence long
-                        #     # TODO Look for a key in keyGroups that leads to shorter text and try that.
-                        #     touchEventIdentificationImpossible = True
-
-                        # elif constants.ERROR_ADB_COMMAND_LENGTH in eDown:
-                        #     # TODO Look for a key in keyGroups that leads to shorter text and try that.
-                        #     # setText() reduces maxADBCommandLength, but we don't want the down text
-                        #     # to be broken up, which is what a smaller maxADBCommandLength does if
-                        #     # the down text remains the same length, so reduce the down text by
-                        #     # removing sequences.
-                        #     downText, _numberOfSequences = utils.reduceDown(eventPath, sequence, 
-                        #                                                     _numberOfSequences,
-                        #                                                     xc1c2, yc1c2)
-                        # else:
-                        #     break
                     if not touchEventIdentificationImpossible:
                         touchEventIdentificationSuccess = True
 
@@ -3653,7 +3372,9 @@ class Device(object):
         # ??? I think I may have handled this: make recording start on button click b/c 
         # recording while replaying is causing the failure "database is locked"
         if camera == 'vnc':
-            self.cameraProcess = VNCProcess(self.mgr, self, self.window, self.mgr.sessionID, self.vncPort, self.serialNo, self.mgr.viewerToGUISocketPort, self.chinBarHeight, self.chinBarImageString)
+            self.cameraProcess = VNCProcess(self.mgr, self, self.window, self.mgr.sessionID, self.vncPort, 
+                                            self.serialNo, self.mgr.viewerToGUISocketPort, self.chinBarHeight,
+                                            self.chinBarImageString)
         elif camera == 'screenshot':
             dprint("Starting ScreenshotProcess")
             self.cameraProcess = ScreenshotProcess(self.mgr, self, self.window, self.mgr.sessionID, 
@@ -3672,10 +3393,8 @@ class Device(object):
                 # TODO This sleep time prolly doesn't have to be a fixed constant; we could instead
                 # look for the files written by monkeyrunner.
                 time.sleep(10)
-#                foo=raw_input()
                 self.dt.enterKeycodes(['HOME'])
                 time.sleep(10)
-                #self.dt.enterKeycodes(['HOME'])
 
         else:
             raise Exception("unrecognized camera specified")
@@ -3791,25 +3510,20 @@ class Device(object):
 
         
     def _copyImageFileIfNecessary(self):
-#        if (self.cameraProcess.getPlayStatus() == 'play' and 
-#            self.imageFilename.startswith('explore')):
-#            self.cameraProcess.setPlayStatus('explore')
-#            shutil.copy(device.imageFilename,
-#                        'play' + device.imageFilename[7:])
         return self.imageFilename
 
-        filename = self.imageFilename
-        if self.mgr and self.mgr.isRecording:
-            if not self.imageFilename.startswith('record'):
-                # The click has been made so soon after starting recording
-                # that the image was written before recording started.
-                filename = self.imageFilename[:-3] + str(time.time()) + '.png'
-                newPath = os.path.join('tests', self.mgr.sessionID, filename)
-                shutil.copy(self.imageFilename, newPath)
-                if os.path.getsize(newPath) == 0:
-                    dprint('ERROR FILE SIZE IS ZERO, DEBUG HERE!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!')
-                    bdbg()
-        return filename
+        # filename = self.imageFilename
+        # if self.mgr and self.mgr.isRecording:
+        #     if not self.imageFilename.startswith('record'):
+        #         # The click has been made so soon after starting recording
+        #         # that the image was written before recording started.
+        #         filename = self.imageFilename[:-3] + str(time.time()) + '.png'
+        #         newPath = os.path.join('tests', self.mgr.sessionID, filename)
+        #         shutil.copy(self.imageFilename, newPath)
+        #         if os.path.getsize(newPath) == 0:
+        #             dprint('ERROR FILE SIZE IS ZERO, DEBUG HERE!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!')
+        #             bdbg()
+        # return filename
 
 
     def fixMonkeyRunner(self):
@@ -3985,17 +3699,6 @@ class Device(object):
             # camera process to the device window, not from the device window to the device.
 
             dprint("device.up(), self.imageFilename:", self.imageFilename)
-
-            # self.cachedClicks.append({'sessionID':self.mgr.sessionID,
-            #                           'serialNo':self.serialNo,
-            #                           'eventType':constants.LEFT_UP_CLICK,
-            #                           'x':x,
-            #                           'y':y,
-            #                           'width':self.width,
-            #                           'height':self.height,
-            #                           'chinBarHeight':self.chinBarHeight,
-            #                           'time':timeOfClick,
-            #                           'imageFilename':filename})
             self.mgr.recorder.recordClick(self.mgr.sessionID, self.serialNo, constants.LEFT_UP_CLICK,
                                           x, y, self.width, self.height, self.chinBarHeight,
                                           filename, timeOfClick)
@@ -4026,18 +3729,6 @@ class Device(object):
         filename = self._copyImageFileIfNecessary()
 
         if self.mgr and self.mgr.isRecording:       
-            # XXX this might be improved as down() was by caching. I can't see a dramatic 
-            # difference while dragging w/ recording on vs. off, though.
-            # self.cachedClicks.append({'sessionID':self.mgr.sessionID,
-            #                           'serialNo':self.serialNo,
-            #                           'eventType':constants.LEFT_MOVE,
-            #                           'x':x,
-            #                           'y':y,
-            #                           'width':self.width,
-            #                           'height':self.height,
-            #                           'chinBarHeight':self.chinBarHeight,
-            #                           'time':timeOfClick,
-            #                           'imageFilename':filename})
             self.mgr.recorder.recordClick(self.mgr.sessionID, self.serialNo, constants.LEFT_MOVE,
                                           x, y, self.width, self.height, self.chinBarHeight,
                                           filename, timeOfClick)
@@ -4067,26 +3758,6 @@ class Device(object):
             self.mgr.recorder.recordClick(self.mgr.sessionID, self.serialNo, constants.LEFT_MOVE,
                                           newX, newY, self.width, self.height, self.chinBarHeight,
                                           filename, time.time())
-            # self.cachedClicks.append({'sessionID':self.mgr.sessionID,
-            #                           'serialNo':self.serialNo,
-            #                           'eventType':constants.LEFT_DOWN_CLICK,
-            #                           'x':x,
-            #                           'y':y,
-            #                           'width':self.width,
-            #                           'height':self.height,
-            #                           'chinBarHeight':self.chinBarHeight,
-            #                           'time':time.time(),
-            #                           'imageFilename':filename})
-            # self.cachedClicks.append({'sessionID':self.mgr.sessionID,
-            #                           'serialNo':self.serialNo,
-            #                           'eventType':constants.LEFT_MOVE,
-            #                           'x':newX,
-            #                           'y':newY,
-            #                           'width':self.width,
-            #                           'height':self.height,
-            #                           'chinBarHeight':self.chinBarHeight,
-            #                           'time':time.time(),
-            #                           'imageFilename':filename})
 
 
     def tap(self, x, y):
@@ -4142,40 +3813,8 @@ class Device(object):
 
 
     def receiveCameraImageUpdate(self, imageFilename):
-#        dprint("self.imageFilename:", self.imageFilename)
-#        dprint("receiveCameraImageUpdate, imageFilename:", imageFilename)
-#        dprint("receiveCameraImageUpdate, mgr.playStatus:", self.mgr.playStatus)
         currentPrefix = imageFilename[:imageFilename.index('.')]
         expectedPrefix = self.mgr.getExpectedPrefix(imageFilename)
-#        dprint("currentPrefix", currentPrefix, "expectedPrefix:", expectedPrefix, "imageFilename:", imageFilename)
-#        dprint("self.mcgr.getRecordingTestPath():", self.mgr.getRecordingTestPath())
-
-        # if currentPrefix != expectedPrefix:
-        #     if expectedPrefix == 'record':
-        #         newImageFilename = expectedPrefix + '.' + self.mgr.getRecordingTestPath() + imageFilename[imageFilename.index('.'):]
-        #         dprint("1 newImageFilename:", newImageFilename)
-        #     elif expectedPrefix == 'play':
-
-        #         newImageFilename = expectedPrefix + '.' + self.mgr.getCurrentPlayingTestName() + imageFilename[imageFilename.index('.'):]
-        #         dprint("2 newImageFilename:", newImageFilename)
-        #     elif expectedPrefix == 'explore':
-        #         numberPeriodsFound = 0
-        #         indexInName = len(imageFilename) - 1
-        #         while numberPeriodsFound < 3 and indexInName > 0:
-        #             if imageFilename[indexInName] == '.':
-        #                 numberPeriodsFound += 1
-        #             else:
-        #                 indexInName -= 1
-        #         suffix = imageFilename[indexInName:]
-        #         newImageFilename = expectedPrefix + '.' + self.serialNo + suffix
-        #         dprint("3 newImageFilename:", newImageFilename)
-        #     else:
-        #         dprint("unexpected condition")
-        #         bdbg()
-                
-        #     shutil.copy(imageFilename, newImageFilename)
-        # else:
-        #     newImageFilename = imageFilename
 
         if currentPrefix != expectedPrefix:
             # getImageData() must create the filename before the file is created by FFmpeg.
@@ -4221,7 +3860,9 @@ class Device(object):
             cv.SetData(screen, imageString_[:-(self.width * self.chinBarHeight * 3)])
         else:
             cv.SetData(screen, imageString_)
-        contents, success = utils.getOCRText(globals_.getUserDocumentsPath(), screen, self.width, self.height - self.chinBarHeight, self.serialNo, box=False, lines=False)
+        contents, success = utils.getOCRText(globals_.getUserDocumentsPath(), screen, self.width, 
+                                             self.height - self.chinBarHeight, self.serialNo, box=False, 
+                                             lines=False)
         dprint("isThisTextPresent, contents:", contents)
         if success == constants.SUB_EVENT_ERRORED:
             return None, success
@@ -4245,7 +3886,8 @@ class Device(object):
                     maxDistance = defaultMaxDistance
                 else:
                     endpoint_ = lenContents
-                    maxDistance = constants.MAX_LEVENSHTEIN_VERIFY_FN(maximumAcceptablePercentageDistance, endpoint_ - (index + 1))
+                    maxDistance = constants.MAX_LEVENSHTEIN_VERIFY_FN(maximumAcceptablePercentageDistance, 
+                                                                      endpoint_ - (index + 1))
                 if cylevenshtein.distance(contents[index:endpoint_], text) <= maxDistance:
                     return None, constants.SUB_EVENT_PASSED
             return None, constants.SUB_EVENT_FAILED
@@ -4258,25 +3900,20 @@ class Device(object):
 
     def findTargetFromInputEvent(self, inputEvent, imageString):
         if constants.DEBUGGING_SHOWING_DEVICE_SCREEN:
-            utils.show3ChannelImageFromString(imageString=imageString + self.chinBarImageString, width=self.width, height=self.height)
+            utils.show3ChannelImageFromString(imageString=imageString + self.chinBarImageString, width=self.width, 
+                                              height=self.height)
         return utils.findTargetFromInputEvent(self, inputEvent, imageString + self.chinBarImageString)
 
 
     def findTargetInImageFile(self, imageString, targetImagePath, characters=None, unusedArg=None):
         if constants.DEBUGGING_SHOWING_DEVICE_SCREEN:
-            utils.show3ChannelImageFromString(imageString=imageString + self.chinBarImageString, width=self.width, height=self.height)
+            utils.show3ChannelImageFromString(imageString=imageString + self.chinBarImageString, width=self.width, 
+                                              height=self.height)
         return utils.findTargetInImageFile(self, imageString, targetImagePath, characters)
         
-#    def setTestName(self, testName):
-#        # The camera process has a test name while recording, so that the image files
-#        # written have the test in the name.
-#        self.cameraProcess.setTestName(testName)
-
 
 class DeviceWindow(wx.Window, wx.EvtHandler):
     def __init__(self, appFrame, devicePanel, chinSizer, ID):
-        # begin wxGlade: MyFrame1.__init__
-        # kwds["style"] = wx.DEFAULT_FRAME_STYLE
         wx.Window.__init__(self, devicePanel, ID)
         self.appFrame = appFrame
         self.devicePanel = devicePanel
@@ -4301,12 +3938,8 @@ class DeviceWindow(wx.Window, wx.EvtHandler):
         # When the window is destroyed, clean up resources.
         # XXX self.Bind(wx.EVT_WINDOW_DESTROY, self.Cleanup)
 
-        #if len(self.sessions) > 0:
-        #    self.sessionsChoiceBox.SetSelection(0)
-
         self.__set_properties()
         self.__do_layout()
-        # end wxGlade
 
         EVT_RESULT(self, ADB_ERROR_ID, self.OnADBError)
         EVT_RESULT(self, CAMERA_RESULT_ID, self.OnCameraUpdate)
@@ -4318,9 +3951,6 @@ class DeviceWindow(wx.Window, wx.EvtHandler):
         self.charTimerSet = False
         self.charTimer = wx.Timer(self)
         self.Bind(wx.EVT_TIMER, self.OnTimer)
-
- #        self.Bind(wx.EVT_KILL_FOCUS, self.onKillFocus)
- #       self.Bind(wx.EVT_SET_FOCUS, self.onSetFocus)
 
 
     def onKillFocus(self, _):
@@ -4347,18 +3977,11 @@ class DeviceWindow(wx.Window, wx.EvtHandler):
 
 
     def __do_layout(self):
-        # begin wxGlade: MyFrame1.__do_layout
         sizer_2 = wx.BoxSizer(wx.VERTICAL)
         sizer_3 = wx.BoxSizer(wx.HORIZONTAL)
-        #sizer_3.Add(self.imageCtrl, 0, 0, 0)
-        #sizer_3.Add(self.panel_1, 1, wx.EXPAND, 0)
-        #self.notebook_1_pane_1.SetSizer(sizer_3)
-        #self.notebook_1.AddPage(self.notebook_1_pane_1, "tab1")
-        #sizer_2.Add(self.notebook_1, 1, wx.EXPAND, 0)
         self.SetSizer(sizer_2)
         sizer_2.Fit(self)
         self.Layout()
-        # end wxGlade
 
 
     # These are a kluge to avoid having double-clicks in the Load Test dialog
