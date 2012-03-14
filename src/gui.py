@@ -3926,17 +3926,10 @@ class DeviceWindow(wx.Window, wx.EvtHandler):
         self.Bind(wx.EVT_LEFT_DCLICK, self.OnLeftDClick)
         self.Bind(wx.EVT_MOTION, self.OnMouseMove)
 
-        # the window resize event and idle events for managing the buffer
-        # XXX self.Bind(wx.EVT_SIZE, self.OnSize)
-        # XXX self.Bind(wx.EVT_IDLE, self.OnIdle)
-
         # and the refresh event
         self.Bind(wx.EVT_PAINT, self.OnPaint)
 
         self.Bind(wx.EVT_CHAR, self.OnCharEvent)
-        
-        # When the window is destroyed, clean up resources.
-        # XXX self.Bind(wx.EVT_WINDOW_DESTROY, self.Cleanup)
 
         self.__set_properties()
         self.__do_layout()
@@ -3965,15 +3958,10 @@ class DeviceWindow(wx.Window, wx.EvtHandler):
         
     def setDevice(self, device):
         self.device = device
-        #self.buffer = wx.EmptyBitmap(self.device.width, self.device.height)
 
     
     def __set_properties(self):
         pass
-        # begin wxGlade: MyFrame1.__set_properties
-        #self.SetTitle("frame_2")
-        #self.imageCtrl.SetSize(self.imageCtrl.GetBestSize())
-        # end wxGlade
 
 
     def __do_layout(self):
@@ -4007,7 +3995,6 @@ class DeviceWindow(wx.Window, wx.EvtHandler):
 
 
     def OnLeftMouseDown(self, event):
-        #dprint('DeviceWindow: onleftmousedown')
         # During a double-click, this routine is called by wx for only the first
         # down event. The callbacks run are down(), up(), doubleclick(), up().
         self.SetFocus()
@@ -4025,7 +4012,6 @@ class DeviceWindow(wx.Window, wx.EvtHandler):
 
 
     def OnLeftMouseUp(self, event):
-        #dprint('DeviceWindow: onleftmouseup')
         # Double-clicking quickly produces two 'up's in a row, in
         # which case we don't call up again b/c we've already set
         # the coords to None.
@@ -4067,7 +4053,8 @@ class DeviceWindow(wx.Window, wx.EvtHandler):
                                                                            y=y))
             self.device.move(x, y)
             #wx.SafeYield() # works but screen is whiter
-            #wx.Yield() # fails: wx._core.PyAssertionError: C++ assertion "wxAssertFailure" failed at ../src/gtk/app.cpp(82) in Yield(): wxYield called recursively
+            #wx.Yield() # fails: wx._core.PyAssertionError: C++ assertion "wxAssertFailure"...
+            #    ...failed at ../src/gtk/app.cpp(82) in Yield(): wxYield called recursively
             #wx.Usleep(5) # doesn't change behavior at all
             #wx.YieldIfNeeded() # doesn't change behavior at all
 
@@ -4103,14 +4090,12 @@ class DeviceWindow(wx.Window, wx.EvtHandler):
             dprint("error!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
             bdbg()
             return
-#        dprint("OnCameraUpdate, time.time():", time.time())
         image = cv.CreateImageHeader((cameraUpdate.width, height),
                                      cv.IPL_DEPTH_8U, 3)
         cv.SetData(image, imageString + self.device.chinBarImageString)
         
         frameWidth, frameHeight = self.appFrame.GetClientSize()
 
-#        dprint(1)
         availableWidth, availableHeight = frameWidth, frameHeight
         widthRatio = float(availableWidth) / cameraUpdate.width
         heightRatio = float(availableHeight) / height
@@ -4127,18 +4112,9 @@ class DeviceWindow(wx.Window, wx.EvtHandler):
             # the panel so that previous images are no longer visible. If this call
             # is commented, those images stick around so long as they aren't smaller
             # than the one currently being written. 
+            # I believe that I also tried drawing an EmptyBitmap to the dc and drawing an
+            # EmptyImage to the dc, both with no success.
             self.devicePanel.Refresh()
-
-            #self.buffer = wx.EmptyBitmap(self.device.imageWidth, self.device.imageHeight)
-            #dc = wx.BufferedDC(wx.ClientDC(self), self.buffer)
-            #dc.BeginDrawing()
-            #dc.SetBackground(wx.NullColor)
-            #dc.Clear()
-            
-            #image = wx.EmptyImage(self.device.imageWidth, self.device.imageHeight)
-            #image.SetData('\xFF\xFF\xFF' * self.device.imageWidth * self.device.imageHeight)
-            #dc.DrawBitmap(wx.BitmapFromImage(image), 0, 0)
-            #dc.EndDrawing()
 
         self.SetInitialSize((availableWidth, availableHeight))
 
@@ -4148,7 +4124,6 @@ class DeviceWindow(wx.Window, wx.EvtHandler):
             return
         reducedScreen = cv.CreateMat(smallerHeight, smallerWidth,
                                      cv.CV_8UC3)
-#        dprint(2)
         cv.Resize(image, reducedScreen)
         reducedImageString = reducedScreen.tostring()
         # Pushes the chin sizer back to the device window if a resize has occurred.
@@ -4156,7 +4131,8 @@ class DeviceWindow(wx.Window, wx.EvtHandler):
         try:
             # When the dialog of setWindow() pops up but the user doesn't dismiss it, this throws
             # an exception. Ignore it for now. XXX
-            self.appFrame.devicePanels[activeDeviceIndex].devicePanelSizer.Fit(self.appFrame.devicePanels[activeDeviceIndex])
+            devicePanel = self.appFrame.devicePanels[activeDeviceIndex]
+            self.appFrame.devicePanels[activeDeviceIndex].devicePanelSizer.Fit(devicePanel)
         except Exception, e:
             return
         #dc.SetBackground( wx.Brush("White") )
@@ -4165,27 +4141,22 @@ class DeviceWindow(wx.Window, wx.EvtHandler):
             #image.SetData('\xFF\xFF\xFF' * self.device.imageWidth * self.device.imageHeight)
             #dc.DrawBitmap(wx.BitmapFromImage(image), 0, 0)
         self.buffer = wx.EmptyBitmap(smallerWidth, smallerHeight)
-#        dprint(3)
         dc = wx.BufferedDC(wx.ClientDC(self), self.buffer)
         dc.BeginDrawing()
-#        dprint(4)
         image = wx.EmptyImage(smallerWidth, smallerHeight)
         image.SetData(reducedImageString)
-#        dprint(5)
         dc.DrawBitmap(wx.BitmapFromImage(image), 0, 0)
         dc.EndDrawing()
 
         # Putting the call self.devicePanel.Refresh() here immediately causes the
         # error "PyAssertionError: C++ assertion ... invalid backing store".
 
-#        dprint(6)
         self.timeOfLastScreenUpdate = time.time()
         #globals_.traceLogger.debug("OnCameraUpdate(): updated the screen")
         self.device.updateImageSize(smallerWidth, smallerHeight)
 
 
     def OnPaint(self, event):
-#        dprint("<DeviceWindow>.OnPaint()")
         # Called when the window is exposed.
 
         # Create a buffered paint DC.  It will create the real
@@ -4344,10 +4315,6 @@ class ScreenshotProcess(threading.Thread):
 
 
     def setRecordOrPlayTestName(self, testName=None, indexInSuite=None):
-        # if self.playStatus == 'pause' and status == 'play':
-        #     dprint("copying file ", self.previousExploreImageFilenames[-1])
-        #     shutil.copy(self.previousExploreImageFilenames[-1],
-        #                 'play' + self.previousExploreImageFilenames[-1][7:])
         dprint("setRecordOrPlayTestName", testName)
         #self.testName = testName
         #self.indexInSuite = indexInSuite
@@ -4382,9 +4349,6 @@ class ScreenshotProcess(threading.Thread):
                 # is the DeviceGUIAssembly; perhaps it doesn't exist, so the PostEvent hangs.
                 if self.stopRequested:
                     return
-                #dprint("ScreenShot.run(), time:", time.time())
-                #dprint("sending postevent/calling receiveCameraImageUpdate for", flattenedPNGName)
-                #self.device.window.OnCameraUpdate(self.FakeCameraUpdate(self.device.width, (self.device.height - self.device.chinBarHeight), flattenedPNGName))
                 if flattenedPNGPath:
                     wx.PostEvent(self.notify_window, ScreenshotUpdate(self.port, self.serialNo, self.width, 
                                                                       self.height, os.path.basename(flattenedPNGPath)))
@@ -4394,7 +4358,6 @@ class ScreenshotProcess(threading.Thread):
 
 
     def getImageData(self):
-        #dprint("getImageData, self.playStatus", self.playStatus, "mgr.playstatus", self.mgr.playStatus)
         pulledBufferName = 'raw.' + self.serialNo
         if self.screenshotMethod == constants.SCREENSHOT_METHOD_MONKEYRUNNER:
             # Find the name of the existing file that tells monkeyrunner what to do.
@@ -4436,7 +4399,7 @@ class ScreenshotProcess(threading.Thread):
                 pass
         else:
             prefix, unflattenedPNGPath, flattenedPNGPath = utils.getPNGNames(self.mgr, self.serialNo)
-            # todo this has to be the pix format from the config file
+            # XXX this has to be the pix format from the config file
             pixformat = constants.SCREENSHOT_METHOD_PIXFORMAT[self.screenshotMethod]
             utils.writeImage(self.adbTransport, pulledBufferName, self.serialNo, prefix, unflattenedPNGPath,
                              flattenedPNGPath, self.width, self.height, pixformat)
@@ -4445,8 +4408,6 @@ class ScreenshotProcess(threading.Thread):
 
         if constants.STREAK_DEBUG:
             pass
-#            os.remove(flattenedPNGName)
-#            shutil.copyfile("streak.png", flattenedPNGName)
 
         lenPreviousFilenames = len(self.previousExploreImageFilenames)
         while lenPreviousFilenames > 5:
@@ -4511,8 +4472,9 @@ class ReloadGUIEvent(wx.PyEvent):
 
 
 class VNCProcess(threading.Thread):
-    # A VNC thread specific to a device.
-    def __init__(self, mgr, device, notify_window, session, vncPort, serialNo, viewerToGUISocketPort, chinBarHeight, chinBarImageString):
+    # XXX  A VNC thread specific to a device.
+    def __init__(self, mgr, device, notify_window, session, vncPort, serialNo, viewerToGUISocketPort, chinBarHeight, 
+                 chinBarImageString):
         self.mgr = mgr
         self.device = device
         self.notify_window = notify_window
@@ -4525,8 +4487,9 @@ class VNCProcess(threading.Thread):
         self.imageString = ""
         self.recorder = None
         self.stopRequested = False
-        # TODO
-        java = "java -cp /homep/tst/d/tigervnc-1.0.1/java/src com/tigervnc/vncviewer/VncViewer HOST localhost PORT " + str(vncPort)
+        # XXX
+        java = ("java -cp /homep/tst/d/tigervnc-1.0.1/java/src com/tigervnc/vncviewer/VncViewer HOST localhost PORT " +
+                str(vncPort))
         self.javaProcess = subprocess.Popen(java.split())
         self.vncviewerSocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         # XXX move port defn to config tab. change the VncCanvas.java to take port as input if it doesn't already.
@@ -4537,11 +4500,6 @@ class VNCProcess(threading.Thread):
         threading.Thread.__init__(self)
         self.start()
 
-
-#    def run(self):
-#        while True:
-#            width, height, imageString = self.getImageData()
-#            wx.PostEvent(self.notify_window, VNCUpdate(self.vncPort, self.serialNo, width, height, imageString))
 
     def run(self):
         while True:
@@ -4621,9 +4579,12 @@ class MyApp(wx.App):
         try:
             self.frame = AppFrame(None, self) #camera='screenshot', device=device)
         except ADBMisconfigured, e:
-            message = "An attempt to call Android Debug Bridge (adb) failed. The command the tool tried to execute was:\n\n"
-            message += e.message + '\n\n'
-            message += "Please check that adbpath in the configuration file for this tool, at " + os.path.join(wx.StandardPaths_Get().GetDocumentsDir(), constants.APP_DIR, constants.APPLICATION_NAME_REGULAR_CASE + '.cfg') + ", is set correctly.\n"
+            message = "An attempt to call Android Debug Bridge (adb) failed. The command the tool tried to execute "
+            message += "was:\n\n" + e.message + '\n\n'
+            message += "Please check that adbpath in the configuration file for this tool, at " 
+            message += os.path.join(wx.StandardPaths_Get().GetDocumentsDir(), constants.APP_DIR, 
+                                    constants.APPLICATION_NAME_REGULAR_CASE + '.cfg')
+            message += ", is set correctly.\n"
             dlg = wx.MessageDialog(None,
                                    message,
                                    "Error", # Dialog title
@@ -4635,9 +4596,6 @@ class MyApp(wx.App):
         self.SetTopWindow(self.frame)
         self.frame.Show()
         return 1
-
-# end of class MyApp
-
 
 
 if __name__ == '__main__':
@@ -4685,6 +4643,7 @@ if __name__ == '__main__':
         sys.exit(0)
     else:
 
+        # XXX noGUI has fallen out of use but could be supported in the future.
         if options.noGUI:
             mgr = IndividualTestManager()
             mgr.device.setWindow(None, 'screenshot')

@@ -136,7 +136,8 @@ class InputEvent(object):
                  dragDownUnits=None):
         # x and y are device coords, not test tool GUI coords
         # characters is string to find in a tap target
-        # dragEndRegion is redundant b/c it's determined by dragStartRegion, dragRightUnits, and dragDownUnits. Ignore it.
+        # dragEndRegion is redundant b/c it's determined by dragStartRegion, dragRightUnits, and dragDownUnits.
+        # Ignore it.
         self.indexInDB = indexInDB
         self.serialNo = serialNo
         if type(startTime) == str:
@@ -207,7 +208,8 @@ class InputEvent(object):
         self.pathAndTime += [(x, y, elapsed)]
 
 
-    def finishDrag(self, x, y, timeWithSubseconds, screenOrientation, appWindowUpperLeftCoord, appWindowWidth, appWindowHeight, noUpclick=False):
+    def finishDrag(self, x, y, timeWithSubseconds, screenOrientation, appWindowUpperLeftCoord, appWindowWidth, 
+                   appWindowHeight, noUpclick=False):
         # Finish creating an inputEvent that has just been recognized as a
         # drag.
 
@@ -229,7 +231,8 @@ class InputEvent(object):
             # Use a 3 x 3 division of the screen into regions, with numbering
             # like that on a telephone keypad, starting at 1 in the upper left
             # and finishing with 9 in the lower right.
-            # XXX the constants NUMBER_OF_REGION_COLUMNS/ROWS encode what's hard-coded here in the if/else blocks. Remove the hard-coding.
+            # XXX the constants NUMBER_OF_REGION_COLUMNS/ROWS encode what's hard-coded here in the if/else blocks. 
+            #     Remove the hard-coding.
             if x_ < windowWidth / 3.0:
                 column = 1
             elif x_ < (2 * windowWidth) / 3.0:
@@ -297,8 +300,8 @@ def createApplicationDirectory(frame=None, showExitDialog=False):
                 assert frame is not None
                 _presentExitNotice(("We tried to create an application directory at {dir} " +
                                    "but failed. Please check the directory permissions.").format(
-                    dir=applicationDir),
-                                  frame)
+                        dir=applicationDir),
+                                   frame)
             return None, None, False
     return applicationDir, originalWorkingDir, True
 
@@ -324,7 +327,8 @@ def groupCoordssByY(coordss):
     coordssInLines = []
     coordssIndex = 0
     # Group characters in the alphabet/code base by their size and position on the line.
-    # Write a lookup function that maps from a character's grouping and box dimensions to the baseline (what 'b', 'e', 'l', '.' sit on).
+    # Write a lookup function that maps from a character's grouping and box dimensions to 
+    # the baseline (what 'b', 'e', 'l', '.' sit on).
     # Use this baseline, rather than the box bottom, to group chars on a line.
 
     def getBaselineAndTolerance(coords):
@@ -375,7 +379,8 @@ def groupCoordssByX(row):
             charWidth = coords[3] - coords[1]
             return (previousWidth or 1.0 * charWidth), True
         charHeight = coords[2] - coords[4]
-        return (constants.SPACE_WIDTH_TO_X_HEIGHT_RATIO * (charHeight / arialBaselineIdentification[coords[0]][1])), False
+        return ((constants.SPACE_WIDTH_TO_X_HEIGHT_RATIO * (charHeight / arialBaselineIdentification[coords[0]][1])), 
+                False)
 
     # Find gaps in chars on the same line that are so big they suggest that
     # the chars are not semantically that related.
@@ -389,8 +394,10 @@ def groupCoordssByX(row):
         mostRecentRightX = row[0][3]
         spaceWidth, wasGuess = determineSpaceWidthFromCharacter(row[0], wasGuess=True)
         for coords_ in row[1:]:
-            if coords_[1] - mostRecentLeftX <= constants.BIG_CHAR_DISTANCE_SCALAR * (mostRecentRightX - mostRecentLeftX):
-                spaceWidth, wasGuess = determineSpaceWidthFromCharacter(coords_, wasGuess=wasGuess, previousWidth=spaceWidth)
+            if (coords_[1] - mostRecentLeftX <= 
+                constants.BIG_CHAR_DISTANCE_SCALAR * (mostRecentRightX - mostRecentLeftX)):
+                spaceWidth, wasGuess = determineSpaceWidthFromCharacter(coords_, wasGuess=wasGuess, 
+                                                                        previousWidth=spaceWidth)
                 #charHeight = coords_[2] - coords_[4]
                 #xHeight = charHeight / arialBaselineIdentification[coords_[0]][1]
                 #if ((coords_[1] - mostRecentRightX) / xHeight) >= constants.SPACE_WIDTH_TO_X_HEIGHT_RATIO:
@@ -469,6 +476,7 @@ def getOCRText(userDocumentsPath, image, width, height, serialNo, box=False, lin
         tesseractPath = os.path.join(os.path.dirname(globals_.getExecutableOrRunningModulePath()), 'tesseract.301.exe')
     else:
         tesseractPath = os.path.join(os.path.dirname(globals_.getExecutableOrRunningModulePath()), 'tesseract')
+
     if box:
         outPath = os.path.join(appDir, "eng.arial.box")
         if os.path.exists(outPath):
@@ -493,7 +501,6 @@ def getOCRText(userDocumentsPath, image, width, height, serialNo, box=False, lin
                                 stdout=subprocess.PIPE, stderr=subprocess.PIPE, env=env)
 
     out, err = proc.communicate()
-    dprint("getOCRText end:", time.time())
     if not os.path.exists(outPath):
         dprint("error. is imagepath not present? does tesseract not produce any output?")
         if lines:
@@ -532,7 +539,11 @@ def _superimposeImage(backgroundString, backgroundWidth, backgroundHeight, cvIma
         leftIndex = rowNumber * backgroundWidth * 3
         # compose rows of new image from solid color image and those of image from file
         if iffTopY <= rowNumber <= iffBottomY:
-            newBackgroundRowString = backgroundString[leftIndex:leftIndex + iffLeftX * 3] + iffString[(rowNumber - iffTopY) * resizedWidth * 3:(rowNumber - iffTopY + 1) * resizedWidth * 3] + backgroundString[leftIndex + iffLeftX * 3 + resizedWidth * 3:leftIndex + backgroundWidth * 3]
+            iffStringStart = (rowNumber - iffTopY) * resizedWidth * 3
+            backgroundStringStart = leftIndex + iffLeftX * 3 + resizedWidth * 3
+            newBackgroundRowString = (backgroundString[leftIndex:leftIndex + iffLeftX * 3] + 
+                                      iffString[iffStringStart:(rowNumber - iffTopY + 1) * resizedWidth * 3] + 
+                                      backgroundString[backgroundStringStart:leftIndex + backgroundWidth * 3])
         else:
             newBackgroundRowString = backgroundString[leftIndex:leftIndex + backgroundWidth * 3]
         newBackgroundString += newBackgroundRowString
@@ -554,13 +565,15 @@ def findTargetInImageFile(self, imageString, targetImagePath, characters=None):
         if self.orientation == constants.LANDSCAPE:
             # Note that, if the image string does not contain an alpha channel, the call can be
             # pilImage = Image.frombuffer("RGB", (self.width, self.height), self.imageString, 'raw', "RGB", 0, 1)
-            pilImage = Image.frombuffer("RGBA", (self.width, self.height - self.chinBarHeight), imageString_, 'raw', "RGBA", 0, 1)
+            pilImage = Image.frombuffer("RGBA", (self.width, self.height - self.chinBarHeight), 
+                                        imageString_, 'raw', "RGBA", 0, 1)
             pilImage = pilImage.rotate(90)
             imageString_ = pilImage.getdata()
 
         image = cv.CreateImageHeader((self.width, (self.height - self.chinBarHeight)), cv.IPL_DEPTH_8U, 3)
         cv.SetData(image, imageString_)
-        lines, success = getOCRText(globals_.getUserDocumentsPath(), image, self.width, (self.height - self.chinBarHeight), self.serialNo, box=True, lines=True)
+        lines, success = getOCRText(globals_.getUserDocumentsPath(), image, self.width, 
+                                    (self.height - self.chinBarHeight), self.serialNo, box=True, lines=True)
         if success == constants.SUB_EVENT_ERRORED:
             return [], [], success
         if lines[-1] == '':
@@ -586,7 +599,8 @@ def findTargetInImageFile(self, imageString, targetImagePath, characters=None):
         matchingStringLocations = []
         for index, screenString in enumerate(xGroupedYGroupedStrings):
             if len(screenString) <= lenTargetCharacters:
-                if cylevenshtein.distance(screenString, targetCharacters) <= constants.MAX_LEVENSHTEIN_FOR_TARGET_IDENTIFICATION_FN(lenTargetCharacters):
+                if (cylevenshtein.distance(screenString, targetCharacters) <= 
+                    constants.MAX_LEVENSHTEIN_FOR_TARGET_IDENTIFICATION_FN(lenTargetCharacters)):
                     coordss_ = xGroupedYGroupedCoordss[index]
                     matchingStrings.append(screenString)
                     matchingStringLocations.append((coordss_[0][1], coordss_[0][2], coordss_[-1][3], coordss_[-1][4]))
@@ -604,7 +618,6 @@ def findTargetInImageFile(self, imageString, targetImagePath, characters=None):
                                                         xGroupedYGroupedCoordss[index][i + lenTargetCharacters - 1][3], 
                                                         xGroupedYGroupedCoordss[index][i + lenTargetCharacters - 1][4]))
 
-        dprint("findText end:", time.time())
         return matchingStringLocations, matchingStrings, constants.SUB_EVENT_PASSED
 
 
@@ -649,7 +662,9 @@ def findTargetInImageFile(self, imageString, targetImagePath, characters=None):
         for rowNumber in range(resultHeight):
             leftIndex = rowNumber * resultWidth
             if maskTopY <= rowNumber <= maskBottomY:
-                newMaskString += maskString[leftIndex:leftIndex + maskLeftX] + chr(0) * maskWidth + maskString[leftIndex + maskLeftX + maskWidth:leftIndex + resultWidth]
+                maskStringStart = leftIndex + maskLeftX + maskWidth
+                newMaskString += (maskString[leftIndex:leftIndex + maskLeftX] + 
+                                  chr(0) * maskWidth + maskString[maskStringStart:leftIndex + resultWidth])
             else:
                 newMaskString += maskString[leftIndex:leftIndex + resultWidth]
         maskString = newMaskString
@@ -658,7 +673,8 @@ def findTargetInImageFile(self, imageString, targetImagePath, characters=None):
 
 
     invertedColorTargetImage = cv.LoadImage(targetImagePath, cv.CV_LOAD_IMAGE_COLOR)
-    targetImage = cv.CreateImageHeader((invertedColorTargetImage.width, invertedColorTargetImage.height), cv.IPL_DEPTH_8U, 3)
+    targetImage = cv.CreateImageHeader((invertedColorTargetImage.width, invertedColorTargetImage.height), 
+                                       cv.IPL_DEPTH_8U, 3)
     cv.SetData(targetImage, invertedColorTargetImage.tostring())
     # cv.CV_RGB2BGR or cv.CV_BGR2RGB, I don't know which is correct and it doesn't matter; 
     # they do the same thing.
@@ -700,7 +716,9 @@ def findTargetInImageFile(self, imageString, targetImagePath, characters=None):
     if not characters:
         maxLocInScreen = (maxLoc[0] + target.width / 2,
                           maxLoc[1] + target.height / 2)
-        globals_.imageFindingLogger.debug("findTargetFromInputEvent(): an image match (with score " + str(maxVal) + ") was found and there are no characters in the inputEvent") 
+        logMessage = "findTargetFromInputEvent(): an image match (with score " + str(maxVal) 
+        logMessage += ") was found and there are no characters in the inputEvent"
+        globals_.imageFindingLogger.debug(logMessage)
         return maxLocInScreen, constants.SUB_EVENT_PASSED
     else:
         traceLogger.debug("characters: " + characters)
@@ -723,17 +741,23 @@ def findTargetInImageFile(self, imageString, targetImagePath, characters=None):
         # distance may not be a good idea. Just return the best image
         # match, which is the first.
         if coordsNearStringLocations(maxLocInScreen, matchingStringLocations):
-            globals_.imageFindingLogger.debug("findTargetFromInputEvent(): a matching string was found near an image match having score " + str(maxVal))
+            imageLoggerMessage = "findTargetFromInputEvent(): a matching string was found near an image match having "
+            imageLoggerMessage += "score " + str(maxVal)
+            globals_.imageFindingLogger.debug(imageLoggerMessage)
             dprint("maxLocInScreen", maxLocInScreen)
             return maxLocInScreen, constants.SUB_EVENT_PASSED
         else:
-            globals_.imageFindingLogger.debug("findTargetFromInputEvent(): a matching image was found but the required characters are not near it. Searching for other matches.")
+            imageLoggerMessage = "findTargetFromInputEvent(): a matching image was found but the required characters "
+            imageLoggerMessage += "are not near it. Searching for other matches."
+            globals_.imageFindingLogger.debug(imageLoggerMessage)
 
         maxLoc, maxVal, mask = getImageMatchLocation(constants.TEMPLATE_MATCH_MINIMUM, resultMap, mask)
         if maxLoc is None:
             # There won't be any further matches b/c getImageMatchLocation
             # processes them in order from best to worst.
-            globals_.imageFindingLogger.debug("findTargetFromInputEvent(): there are no more matching images in the screen and there are characters in the inputEvent.")
+            imageLoggerMessage = "findTargetFromInputEvent(): there are no more matching images in the screen and "
+            imageLoggerMessage += "there are characters in the inputEvent."
+            globals_.imageFindingLogger.debug(imageLoggerMessage)
             return None, constants.SUB_EVENT_FAILED
 
 
@@ -750,8 +774,10 @@ def _getBoxCoords(lines, height, chinBarHeight):
             dprint("EXCEPTION!!!!!!!!!!!!!!!!!!!!:", e)
             dprint("line!!!!!!!!!!!!!!:", line)
         leftX, lowerY, rightX, upperY = int(leftX), int(lowerY), int(rightX), int(upperY)
-        coords += [(char, leftX / constants.TESSERACT_RESIZE_FACTOR, (height - chinBarHeight) - lowerY / constants.TESSERACT_RESIZE_FACTOR,
-                    rightX / constants.TESSERACT_RESIZE_FACTOR, (height - chinBarHeight) - upperY / constants.TESSERACT_RESIZE_FACTOR)]
+        coords += [(char, leftX / constants.TESSERACT_RESIZE_FACTOR, 
+                    (height - chinBarHeight) - lowerY / constants.TESSERACT_RESIZE_FACTOR,
+                    rightX / constants.TESSERACT_RESIZE_FACTOR, 
+                    (height - chinBarHeight) - upperY / constants.TESSERACT_RESIZE_FACTOR)]
     return coords
 
 
@@ -807,7 +833,9 @@ def identifyTargetFromTap(x, y, screenWidth, totalHeight, chinBarHeight, orienta
         if len(xGrouping) > 0:
             charIndex = closestCharIndex - 1
             numCharsAdded = 0
-            chars = xGrouping[max(0, closestCharIndex - constants.NUM_CHARS_FOR_TAP_IDENTIFICATION / 2):min(len(xGrouping), closestCharIndex + constants.NUM_CHARS_FOR_TAP_IDENTIFICATION / 2)]
+            xGroupingStart = max(0, closestCharIndex - constants.NUM_CHARS_FOR_TAP_IDENTIFICATION / 2)
+            xGroupingStop = min(len(xGrouping), closestCharIndex + constants.NUM_CHARS_FOR_TAP_IDENTIFICATION / 2)
+            chars = xGrouping[xGroupingStart:xGroupingStop]
         return chars
 
     if not ocrBoxText:
@@ -836,27 +864,7 @@ def identifyTargetFromTap(x, y, screenWidth, totalHeight, chinBarHeight, orienta
             # character, the user may in fact have been tapping on the text.
             chars = getNeighboringChars(closest[1:], coordss)
 
-    # OpenCV's GetRectSubPix may do this.
-    # THIS DOES NOT GET TARGET IMAGES LOCATED IN THE CHIN BAR.
-    # I ALSO DON'T KNOW WHY THIS IS NECESSARY IN THE FIRST PLACE.
-#        targetImageLeftX = max(x - constants.TARGET_IMAGE_SQUARE_WIDTH / 2 + constants.EVEN_WIDTH_ADDITION, 0)
-#        targetImageRightX = min(self.width - 1, x + constants.TARGET_IMAGE_SQUARE_WIDTH / 2 + constants.TARGET_IMAGE_SQUARE_WIDTH % 2)
-#        targetImageWidth = targetImageRightX - targetImageLeftX + 1
-#        targetImageTopY = max(y - constants.TARGET_IMAGE_SQUARE_WIDTH / 2 + constants.EVEN_HEIGHT_ADDITION, 0)
-#        targetImageBottomY = min(self.height - 1, y + constants.TARGET_IMAGE_SQUARE_WIDTH / 2 + constants.TARGET_IMAGE_SQUARE_WIDTH % 2)
-#        targetImageHeight = targetImageBottomY - targetImageTopY + 1
-#
-#        # get the rows of the target image into an array
-#        targetImageString = ""
-#        # Northwest zero means bottom is larger than top.
-#        for rowIndex in range(targetImageTopY, targetImageBottomY + 1):
-#            leftPixelIndex = rowIndex * self.width * constants.NUMBER_OF_IMAGE_CHANNELS + targetImageLeftX * constants.NUMBER_OF_IMAGE_CHANNELS
-#            # zero-indexed row number * length of row in pixels * number of channels + zero-indexed column number * number of channels
-#            rightPixelIndex = rowIndex * self.width * constants.NUMBER_OF_IMAGE_CHANNELS + targetImageRightX * constants.NUMBER_OF_IMAGE_CHANNELS
-#            # Adding constants.NUMBER_OF_IMAGE_CHANNELS to add the rightmost pixel.
-#            targetImageString += savedScreen[leftPixelIndex : rightPixelIndex + constants.NUMBER_OF_IMAGE_CHANNELS]
-
-    return chars #, targetImageWidth, targetImageHeight, targetImageString
+    return chars
 
 
 def getRegionCenterCoords(self, orientation, region):
@@ -905,7 +913,8 @@ def _getCoordsAtMoveEnd(self, orientation, x, y, rightUnits, downUnits):
     return newX, newY
 
 
-def dragUsingTargetImage(self, orientation, targetImagePath, screenImageString, dragRightUnits, dragDownUnits, dragStartRegion, characters=None):
+def dragUsingTargetImage(self, orientation, targetImagePath, screenImageString, dragRightUnits, dragDownUnits, 
+                         dragStartRegion, characters=None):
     # self is an instance of gui.py:Device.
     maxLoc, success = findTargetInImageFile(self, screenImageString, targetImagePath, characters=characters)
     if success == constants.SUB_EVENT_PASSED:
@@ -927,7 +936,8 @@ def dragUsingTargetImage(self, orientation, targetImagePath, screenImageString, 
         y = regionHeight * (dragStartRegion[1] - 1 + 0.5)
         newX = x + regionWidth * dragRightUnits
         newY = y + regionHeight * dragDownUnits
-        traceLogger.debug("Did not find drag target. Dragging from (" + str(x) + ", " + str(y) + ") to (" + str(newX) + ", " + str(newY) + ")")
+        traceLogger.debug("Did not find drag target. Dragging from (" + str(x) + ", " + str(y) + ") to (" + str(newX) +
+                          ", " + str(newY) + ")")
 
     # For now, just do the simple thing and drag by the number of regions or to the screen
     # edge, whichever is less.
@@ -978,8 +988,6 @@ def packageInputEvents(self, clicks, deviceData, testFilePath, chinBarImageStrin
     serialNumbers = set([x[0] for x in clicks])
     inputEvents = {}
 
-    #cur.execute("SELECT clicks.serialNo AS serialNo, clicks.timeWithSubseconds AS time, clickType AS type, x, y, targetWidth, targetHeight, targetImageString, entireScreenImageString, 0 AS index_, 0 AS keycode FROM clicks join savedScreens on clicks.session=savedScreens.session AND clicks.serialNo=savedScreens.serialNo AND clicks.timeWithSubseconds=savedScreens.timeWithSubseconds WHERE clicks.session=? UNION SELECT keyEventsSessions.serialNo AS serialNo, keyEventsSessions.startSeconds AS time, 5 AS type, 0 AS x, 0 AS y, 0 AS targetWidth, 0 AS targetHeight, 0 AS targetImageString, 0 AS entireScreenImageString, keyEvents.index_ AS index_, keyEvents.keycode AS keycode FROM keyEventsSessions JOIN keyEvents ON keyEventsSessions.ROWID=keyEvents.keyEventsSessionID WHERE keyEventsSessions.session=? ORDER BY time, index_",
-
     waitCount = 0
 
     self.killAllOCRBoxProcesses()
@@ -1013,25 +1021,28 @@ def packageInputEvents(self, clicks, deviceData, testFilePath, chinBarImageStrin
             # about 0.01 seconds
             imageString = image.tostring() + chinBarImageString
             targetImageLeftX = max(x - constants.TARGET_IMAGE_SQUARE_WIDTH / 2 + constants.EVEN_WIDTH_ADDITION, 0)
+            targetOuter = x + constants.TARGET_IMAGE_SQUARE_WIDTH / 2 + constants.TARGET_IMAGE_SQUARE_WIDTH % 2
             # Subtract 1 from the width because the array is 0-based.
-            targetImageRightX = min(screenWidth - 1, x + constants.TARGET_IMAGE_SQUARE_WIDTH / 2 + constants.TARGET_IMAGE_SQUARE_WIDTH % 2)
+            targetImageRightX = min(screenWidth - 1, targetOuter)
             targetImageWidth = targetImageRightX - targetImageLeftX + 1
             targetImageTopY = max(y - constants.TARGET_IMAGE_SQUARE_WIDTH / 2 + constants.EVEN_HEIGHT_ADDITION, 0)
+            targetOuter = y + constants.TARGET_IMAGE_SQUARE_WIDTH / 2 + constants.TARGET_IMAGE_SQUARE_WIDTH % 2
             # Subtract 1 from the height because the array is 0-based.
-            targetImageBottomY = min(totalHeight - 1, y + constants.TARGET_IMAGE_SQUARE_WIDTH / 2 + constants.TARGET_IMAGE_SQUARE_WIDTH % 2)
+            targetImageBottomY = min(totalHeight - 1, targetOuter)
             targetImageHeight = targetImageBottomY - targetImageTopY + 1
 
-            dprint("targetImageLeftX, targetImageRightX, targetImageWidth, targetImageTopY, targetImageBottomY, targetImageHeight", targetImageLeftX, targetImageRightX, targetImageWidth, targetImageTopY, targetImageBottomY, targetImageHeight)
             # get the rows of the target image into an array
             targetImageString = ""
             # Northwest zero means bottom is larger than top.
             for rowIndex in range(targetImageTopY, targetImageBottomY + 1):
-                leftPixelIndex = rowIndex * screenWidth * constants.NUMBER_OF_IMAGE_CHANNELS + targetImageLeftX * constants.NUMBER_OF_IMAGE_CHANNELS
-                # zero-indexed row number * length of row in pixels * number of channels + zero-indexed column number * number of channels
-                rightPixelIndex = rowIndex * screenWidth * constants.NUMBER_OF_IMAGE_CHANNELS + targetImageRightX * constants.NUMBER_OF_IMAGE_CHANNELS
+                leftPixelIndex = (rowIndex * screenWidth * constants.NUMBER_OF_IMAGE_CHANNELS + 
+                                  targetImageLeftX * constants.NUMBER_OF_IMAGE_CHANNELS)
+                # zero-indexed row number * length of row in pixels * number of channels + 
+                #     zero-indexed column number * number of channels
+                rightPixelIndex = (rowIndex * screenWidth * constants.NUMBER_OF_IMAGE_CHANNELS + 
+                                   targetImageRightX * constants.NUMBER_OF_IMAGE_CHANNELS)
                 # Adding constants.NUMBER_OF_IMAGE_CHANNELS to add the rightmost pixel.
                 imageStringAddition = imageString[leftPixelIndex : rightPixelIndex + constants.NUMBER_OF_IMAGE_CHANNELS]
-                #dprint("leftPixelIndex, rightPixelIndex, len(imageStringAddition)", leftPixelIndex, rightPixelIndex, len(imageStringAddition))
                 targetImageString += imageStringAddition
 
         # This if-block covers:
@@ -1066,17 +1077,19 @@ def packageInputEvents(self, clicks, deviceData, testFilePath, chinBarImageStrin
                 characters = []
             else:
                 # We're now ignoring targetImage* from the clicks variable above because the functionality has been
-                # moved to identifyTargetFromTap. XXX remove the storage of targetImage* to the immeidate storage of clicks.
+                # moved to identifyTargetFromTap. XXX remove the storage of targetImage* to the immeidate storage of 
+                # clicks.
 
-                #characters, targetImageWidth_, targetImageHeight_, targetImageString_ = self.device.identifyTargetFromTap(x_, y_, screenWidth, totalHeight, chinBarHeight, orientation, savedScreen, ocrBoxText)
-                characters = identifyTargetFromTap(x_, y_, screenWidth, totalHeight, chinBarHeight, orientation, None, ocrBoxText)
+                characters = identifyTargetFromTap(x_, y_, screenWidth, totalHeight, chinBarHeight, orientation, 
+                                                   None, ocrBoxText)
 
             inputEvents[serialNo].append(InputEvent(serialNo=serialNo,
                                                     startTime=timeWithSubseconds,
                                                     inputType=constants.TAP_DRAG_OR_LONG_PRESS,
                                                     x=x_, y=y_,
                                                     targetImageWidth=targetImageWidth,
-                                                    targetImageHeight=targetImageHeight, targetImageString=targetImageString,
+                                                    targetImageHeight=targetImageHeight, 
+                                                    targetImageString=targetImageString,
                                                     characters=''.join([x[0] for x in characters]),
                                                     savedScreenWidth=screenWidth, totalHeight=totalHeight))
 
@@ -1118,9 +1131,12 @@ def packageInputEvents(self, clicks, deviceData, testFilePath, chinBarImageStrin
                 inputEvents[serialNo][-1].isFinished):
                 # A move may have been begun from outside the GUI. (It may be
                 # possible; I don't know.)
-                inputEvents[serialNo].append(InputEvent(serialNo=serialNo, startTime=timeWithSubseconds, inputType=constants.TAP_DRAG_OR_LONG_PRESS, x=x_, y=y_, targetImageWidth=targetImageWidth,
-                                                         targetImageHeight=targetImageHeight, targetImageString=targetImageString,
-                                                         savedScreenWidth=screenWidth, totalHeight=totalHeight))
+                inputEvents[serialNo].append(InputEvent(serialNo=serialNo, startTime=timeWithSubseconds, 
+                                                        inputType=constants.TAP_DRAG_OR_LONG_PRESS, x=x_, y=y_, 
+                                                        targetImageWidth=targetImageWidth,
+                                                        targetImageHeight=targetImageHeight, 
+                                                        targetImageString=targetImageString,
+                                                        savedScreenWidth=screenWidth, totalHeight=totalHeight))
             elif inputEvents[serialNo][-1].inputType == constants.TAP_DRAG_OR_LONG_PRESS:
                 # Only a down click has been recorded for the event in-progress.
                 inputEvents[serialNo][-1].addMovement(x_, y_, timeWithSubseconds)
@@ -1218,7 +1234,8 @@ def AppFrame__init__(self, parent, app):
     self.audioBarPanel = self.buildAudioBar(self.playAndRecordPanel)
     self.playAndRecordSizer.Add((constants.PLAY_AND_RECORD_PANEL_WIDTH, 10))
     self.playAndRecordSizer.Add(self.audioBarPanel, 0, wx.ALIGN_CENTER)
-    self.playAndRecordSizer.Add(wx.StaticLine(self.playAndRecordPanel, -1, size=(constants.PLAY_AND_RECORD_PANEL_WIDTH - 10,-1)),
+    self.playAndRecordSizer.Add(wx.StaticLine(self.playAndRecordPanel, -1, 
+                                              size=(constants.PLAY_AND_RECORD_PANEL_WIDTH - 10,-1)),
                                 0, wx.ALL, 5)        
 
     self.keycodeSizer = self.makeKeycodeControls()
@@ -1240,12 +1257,14 @@ def AppFrame__init__(self, parent, app):
     self.verifyTextBox.Disable()
     self.enterTextBtn = wx.Button(self.playAndRecordPanel, gui.wxID_ENTER_TEXT, "Verify Text")
     self.textVerificationSizer.Add(self.verifyTextBox, 0, border=5, flag=wx.ALIGN_CENTER | wx.TOP)
-    self.textVerificationSizer.Add(self.enterTextBtn, 0, border=5, flag=wx.ALIGN_CENTER | wx.TOP) # I've tried a border around the button with no success.
+    # I've tried a border around the button with no success.
+    self.textVerificationSizer.Add(self.enterTextBtn, 0, border=5, flag=wx.ALIGN_CENTER | wx.TOP) 
     self.enterTextBtn.Bind(wx.EVT_BUTTON, self.onVerifyTextEntry, id=gui.wxID_ENTER_TEXT)
     self.enterTextBtn.Disable()
     self.recordingToolsSizer.Add(self.textVerificationSizer)
 
-    self.recordingToolsSizer.Add(wx.StaticLine(self.playAndRecordPanel, -1, size=(constants.PLAY_AND_RECORD_PANEL_WIDTH - 10,-1)),
+    self.recordingToolsSizer.Add(wx.StaticLine(self.playAndRecordPanel, -1, 
+                                               size=(constants.PLAY_AND_RECORD_PANEL_WIDTH - 10,-1)),
                                  0, wx.ALL, 5)
 
     self.waitSizer = wx.BoxSizer(wx.HORIZONTAL)
@@ -1258,32 +1277,15 @@ def AppFrame__init__(self, parent, app):
     self.waitSizer.Add(self.enterWaitBtn, 0, wx.ALIGN_RIGHT)
 
     self.enterWaitBtn.Bind(wx.EVT_BUTTON, self.onWaitEntry, id=gui.wxID_ENTER_WAIT_TIME)
-#        self.recordingToolsSizer.Add((1,10))
     self.recordingToolsSizer.Add(self.waitSizer, 0, wx.ALIGN_CENTER)
     self.playAndRecordSizer.Add(self.recordingToolsSizer)
     self.recordingToolsSizer.Fit(self.playAndRecordPanel)
 
-    # Events Box
-    # self.replayEventsBox = plateButton.TestPanel(self.playAndRecordPanel, self, TestLog(), None)
-    # self.playAndRecordSizer.Add(self.replayEventsBox, 1)        
-    # self.buttonList = []
-
-    # self.replayEventsBox.DoLayout("", [])
-    # self.replayEventsBox.Disable()
-
     self.eventsBoxQueue = multiprocessing.Queue()
 
-    #self.playAndRecordSizer.Fit(self.playAndRecordPanel)
-    #self.playAndRecordPanel.Refresh()
-
-    #self.Bind(wx.EVT_PAINT, self.OnPaint)
     self.playAndRecordPanelSizer.Add((1, 5))
     self.playAndRecordPanelSizer.Add(self.playAndRecordSizer, border=5, flag=wx.LEFT | wx.RIGHT)
     self.playAndRecordPanel.SetSizer(self.playAndRecordPanelSizer)
-    # I don't think this is necessary.
-    #self.playAndRecordPanel.SetAutoLayout(True)
-    # I don't think this is necessary.
-    #self.playAndRecordSizer.Fit(self.playAndRecordPanel)
 
     # Create a sizer to layout the two windows side-by-side.
     # Both will grow vertically, the doodle window will grow
@@ -1293,19 +1295,12 @@ def AppFrame__init__(self, parent, app):
 
     menuFile = wx.Menu()
 
-    #newTestID = newTestID
     newTest = menuFile.Append(wx.NewId(), "&Record New Test...\tCTRL+N")
     self.Bind(wx.EVT_MENU, self.OnNewSession, newTest)
 
     loadID = wx.NewId()
-    load = menuFile.Append(loadID, "&Load Test...\tCTRL+L") #     load = menuFile.Append(loadID, "&Load Test Into New Suite...\tCTRL+L")
+    load = menuFile.Append(loadID, "&Load Test...\tCTRL+L")
     self.Bind(wx.EVT_MENU, self.onLoadSession, load)
-    
-#    addTestID = wx.NewId()
-#    self.addTestMenuItem = menuFile.Append(addTestID, "&Add Test To Existing Suite...\tCTRL+L")
-#    # Should not be callable if no suite or other test has been loaded.
-#    self.addTestMenuItem.Enable(False)
-#    self.Bind(wx.EVT_MENU, self.onAddTest, self.addTestMenuItem)
     
     menuConfig = wx.Menu()
 
@@ -1337,15 +1332,6 @@ def AppFrame__init__(self, parent, app):
     self.SetStatusText("")
     self.statusBarTimer = wx.Timer(self)
     self.Bind(wx.EVT_TIMER, self.onStatusBarTimer, self.statusBarTimer)
-
-#    self.unhideDeviceWindowTimer = wx.Timer(self)
-#    self.Bind(wx.EVT_TIMER, self.onUnhideDeviceWindowTimer, self.unhideDeviceWindowTimer)
-
-    #self.Bind(wx.EVT_MENU, self.OnLoadTest, id=1)
-
-#            self.notebook_1 = wx.Notebook(self, -1, style=0)
-
-#        self.notebook_1_pane_1 = wx.Panel(self.notebook_1, -1)
 
     # Tell the frame that it should layout itself in response to
     # size events using this sizer.
@@ -1862,12 +1848,7 @@ def possibleRepeaters(compss, normalizedCompss, downEnd, upStart, postfixStart):
     # corresponding comprehensive pattern, one that contains all the lines
     # seen over the length of the output (between the boundaries within that
     # output).
-#    firstRepeatedSectionEnds = [index for index, _comps in enumerate(_compss) if 
-#                                _comps[0] == _comps[1] == _comps[2] == 0][:3]
-    # Keep a comprehensive pattern that contains every line seen.
 
-    # for thing in _compss:
-    #   
     repeaters = []
     normalizedRepeaters = []
     numberOfZerosIn_Compss = sum([1 for comps in _compss if comps[0] == comps[1] == comps[2] == 0])
@@ -1958,11 +1939,6 @@ def getDistanceFromRepeater(normalizedCompss, downEnd, upStart, numberOfZeros, n
     errorsPerLine = float(totalDistance) / len(chompss)
     maxError = max(distances)
     return totalDistance, errorsPerLine, maxError
-
-#    repeaterAllChars = repeaterChars * (numberAllZeros / numberOfZeros)
- #   distance = cylevenshtein.distance(repeaterAllChars, chompss)
- #   errorsPerLine = float(distance) / len(_ncompss)
- #   return distance, errorsPerLine
 
 
 def getCompssFromText(filename):
@@ -2329,7 +2305,6 @@ class Config(object):
     def populateConfigModule():
         configParser, successDEVICE, existed = Config.getConfigParser()
         message = ""
-#        if existed:
         successDEVICE = True
 
         try:
@@ -2366,7 +2341,11 @@ class Config(object):
             config.keycodes['Default'] = copy.deepcopy(config.DEFAULT_KEYCODES)
         successADB, adbPathForConfigFile, adbPathToExecute = Config._fullADBPath(adbPath)
         if not successADB:
-            message += "\nIt appears that the path to Android Debug Bridge (adb) is misconfigured in the configuration file for this tool at " + os.path.join(wx.StandardPaths_Get().GetDocumentsDir(), constants.APP_DIR, constants.APPLICATION_NAME_REGULAR_CASE + '.cfg') + ". Please check that the path exists and is executable."
+            appConfigPath = os.path.join(wx.StandardPaths_Get().GetDocumentsDir(), constants.APP_DIR, 
+                                         constants.APPLICATION_NAME_REGULAR_CASE + '.cfg')
+            message += "\nIt appears that the path to Android Debug Bridge (adb) is misconfigured in the configuration "
+            message += "file for this tool at " 
+            message += appConfigPath + ". Please check that the path exists and is executable."
             return False, message
         if not successDEVICE:
             return False, message
@@ -2380,8 +2359,10 @@ class Config(object):
         # it is not a path but 'which' on Linux (when called with it) reports a path that does exist and is executable
         adbPath = notebook.systemPage.adbPathCtrl.GetValue()
         success, adbPathForConfigFile, adbPathToExecute = Config._fullADBPath(adbPath)
+        message = "It appears that the path to Android Debug Bridge (adb) is misconfigured. Please check that the path "
+        message += "exists and is executable."
         if not success:
-            return False, "It appears that the path to Android Debug Bridge (adb) is misconfigured. Please check that the path exists and is executable.", "Error", None
+            return False, message, "Error", None
 
         # Update config.py before using it to populate configParser below.
         for mapName, keycode in notebook.keycodesPage.focusedMapKeycodePairs:
@@ -2450,7 +2431,6 @@ def writeImage(transport, pulledBufferName, serialNo, prefix, unflattenedPNGName
     o, e = transport.sendCommand('pull /dev/graphics/fb0 ' + pulledBufferName,
                                  waitForOutput=True, debugLevel=constants.DEBUG_DEBUG_LEVEL)
     if e.rstrip() == constants.DEVICE_OFFLINE_ERROR_MESSAGE:
-        # REMOVE!! self.stopped = True
         msg  = "Android Debug Bridge (adb) reports that the device with serial number "
         msg += serialNo + " is offline. To continue, get the device active and "
         msg += "restart the tool."
@@ -2504,11 +2484,7 @@ def getEventPathData(self, potentialEventPaths, lcdHeight, title, msg,
                                   'chinBarImageString':"", 'orientation':self.orientation, 
                                   'maxADBCommandLength':constants.DEFAULT_MAX_ADB_COMMAND_LENGTH,
                                   'usingAltSerialNo':self.usingAltSerialNo}
-    # 'shell getevent'
-    shell_geteventText = (chr(115) + chr(104) + chr(101) + chr(108) + chr(108) + chr(32) + 
-                          chr(103) + chr(101) + chr(116) + chr(101) + chr(118) + chr(101) + 
-                          chr(110) + chr(116))
-    sendevent = SendeventProcess(shell_geteventText, _deviceData, resultsQueue, controlQueue, 
+    sendevent = SendeventProcess("shell getevent", _deviceData, resultsQueue, controlQueue, 
                                  config.adbPath)
     buttonStyle = wx.OK
     dlg = wx.MessageDialog(None,
@@ -2526,7 +2502,8 @@ def getEventPathData(self, potentialEventPaths, lcdHeight, title, msg,
         return []
 
     try:
-        debugoutputpath = os.path.join(globals_.getUserDocumentsPath(), constants.APP_DIR, title.replace(' ','_') + '.' + self.serialNo)
+        debugoutputpath = os.path.join(globals_.getUserDocumentsPath(), constants.APP_DIR, title.replace(' ','_') + 
+                                       '.' + self.serialNo)
         with open(debugoutputpath, 'w') as fp:
             fp.write(output)
     except:
@@ -3009,17 +2986,7 @@ add device 5: /dev/input/event0
 
 
 def identifyDownUpTextFromStreakStyleData(self, upperRightEventPathData, lowerLeftEventPathData,
-                                          lcdHeight, minX, maxX, minY, maxY):
-    # Produced down and up text with no y-coordinate:
-    # upperRightEventPathData: [['/dev/input/event3', [(3, 48, 63), (3, 50, 4), (3, 53, 961), (3, 54, 56), (0, 2, 0), (0, 0, 0)], [(3, 48, 63), (3, 50, 4), (3, 53, 961), (3, 54, 56), (0, 2, 0), (0, 0, 0), (3, 48, 63), (3, 50,
-    # 4), (3, 53, 961), (3, 54, 52), (0, 2, 0), (0, 0, 0), (3, 48, 0), (3, 50, 4), (3, 53, 961), (3, 54, 52), (0, 2, 0), (0, 0, 0)]]]
-    # lowerLeftEventPathData: [['/dev/input/event3', [(3, 48, 22), (3, 50, 1), (3, 53, 0), (3, 54, 941), (0, 2, 0), (0, 0, 0)], [(3, 48, 22), (3, 50, 1), (3, 53, 0), (3, 54, 941), (0, 2, 0), (0, 0, 0), (3, 48, 0), (3, 50, 1),
-    # (3, 53, 0), (3, 54, 941), (0, 2, 0), (0, 0, 0)]]]
-    # llComponentss: [(3, 48, 22), (3, 50, 1), (3, 53, 0), (3, 54, 941), (0, 2, 0), (0, 0, 0), (3, 48, 0), (3, 50, 1), (3, 53, 0), (3, 54, 941), (0, 2, 0), (0, 0, 0)]
-    # llnComponentss: [(3, 48, 1), (3, 50, 1), (3, 53, 0), (3, 54, 1), (0, 2, 0), (0, 0, 0), (3, 48, 0), (3, 50, 1), (3, 53, 0), (3, 54, 1), (0, 2, 0), (0, 0, 0)]
-    # xc1c2s: set([(3, 54)])
-    # yc1c2s: set([(3, 54)])
-    
+                                          lcdHeight, minX, maxX, minY, maxY):    
     eventPathsUR = set([x[0] for x in upperRightEventPathData])
     eventPathsLL = set([x[0] for x in lowerLeftEventPathData])
     eventPaths = list(eventPathsUR.intersection(eventPathsLL))
@@ -3055,7 +3022,7 @@ def identifyDownUpTextFromStreakStyleData(self, upperRightEventPathData, lowerLe
     dprint('yc1c2s:', yc1c2s)
     llDescendingKeyGroups = getDownUpCompss(llComponentss, llnComponentss, xc1c2s, yc1c2s)
 
-    # From getDownUpCompss: key: (downEnd, upStart, postfixLength, repeaterStartIndex, repeaterEndIndex)    
+    # From getDownUpCompss: key: (downEnd, upStart, postfixLength, repeaterStartIndex, repeaterEndIndex)
     key = llDescendingKeyGroups[0][0]
     beginningDownComponents = llComponentss[:key[0] + 1]
     upComponents = llComponentss[key[1]:]
@@ -3431,8 +3398,7 @@ def getDownUpText(eventPath, sequence, componentss, xComponents, yComponents):
         # Use one sequence for down.
         downComponentss = componentss[:-(len(sequence) * (numSequences - 1))]
     downText = ""
-    # 'sendevent'
-    sendeventText = chr(115) + chr(101) + chr(110) + chr(100) + chr(101) + chr(118) + chr(101) + chr(110) + chr(116)
+    sendeventText = "sendevent"
     for c1, c2, c3 in downComponentss:
         downText += sendeventText + " " + eventPath + " "
         if (c1 == xComponents[0] and 
